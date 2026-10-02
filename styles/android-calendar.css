@@ -13,7 +13,7 @@
  * unter der Suchleiste ein, in dem der Titel „Kalender“ ganz unter ihr
  * verschwunden ist — kein Rest des Titels, und in Ruhe bleibt der gewohnte
  * kurze Abstand zwischen Titel und Datum.
- * Gilt nur mit data-mobile-os="android" an <html> und unterhalb von 1024px.
+ * Gilt nur mit data-mobile-os="android" an <html>.
  * Pfad: styles/android-calendar.css
  *
  * ANPASSBARE WERTE (alle in styles/tokens-android.css)
@@ -27,41 +27,39 @@
  * Direkt bei ihrer Regel: die Stunden unten ohne eigenen Innenabstand (0).
  */
 
-@media (max-width: 1023px) {
-  /* Wie weit der letzte Eintrag vom unteren Rand wegbleibt: Leiste, Knopf und
-     zwei Abstände (einer unter, einer über dem Knopf) */
-  [data-mobile-os="android"] .device {
-    --m3-cal-end: calc(var(--m3-nav-shift) + var(--safe-bottom) + var(--m3-fab-size) + 2 * var(--m3-fab-gap));
-  }
+/* Wie weit der letzte Eintrag vom unteren Rand wegbleibt: Leiste, Knopf und
+   zwei Abstände (einer unter, einer über dem Knopf) */
+[data-mobile-os="android"] .device {
+  --m3-cal-end: calc(var(--m3-nav-shift) + var(--safe-bottom) + var(--m3-fab-size) + 2 * var(--m3-fab-gap));
+}
 
-  /* margin-bottom: die Fläche reicht bis zum unteren Rand des Scrollbereichs
-     (gleicht das Seitenende der Android-Fassung aus); padding-bottom ist dann
-     der einzige Platz unter dem letzten Eintrag. */
-  [data-mobile-os="android"] body.is-calendar .cal-panel {
-    margin-bottom: calc(-1 * var(--m3-content-end));
-    padding-bottom: var(--m3-cal-end);
-  }
+/* margin-bottom: die Fläche reicht bis zum unteren Rand des Scrollbereichs
+   (gleicht das Seitenende der Android-Fassung aus); padding-bottom ist dann
+   der einzige Platz unter dem letzten Eintrag. */
+[data-mobile-os="android"] body.is-calendar .cal-panel {
+  margin-bottom: calc(-1 * var(--m3-content-end));
+  padding-bottom: var(--m3-cal-end);
+}
 
-  /* Der Abstand zwischen Titel und Datumszeile steckt ganz im Kopf (padding-top)
-     statt unter dem Titel. Der Kopf rastet mit seiner Oberkante an der
-     Suchleiste ein (top in styles/android-tabs.css); in dem Moment liegt die
-     Unterkante des Titels genau dort, der Titel ist also ganz weg. Die
-     allgemeine Verlängerung um --content-top (styles/calendar.css) entfällt:
-     sie ragte in Ruhe in den Titel hinein, darum musste dort der Abstand auf
-     --content-top wachsen. */
-  [data-mobile-os="android"] #view-calendar .screen-title {
-    margin-bottom: 0;
-  }
+/* Der Abstand zwischen Titel und Datumszeile steckt ganz im Kopf (padding-top)
+   statt unter dem Titel. Der Kopf rastet mit seiner Oberkante an der
+   Suchleiste ein (top in styles/android-tabs.css); in dem Moment liegt die
+   Unterkante des Titels genau dort, der Titel ist also ganz weg. Die
+   allgemeine Verlängerung um --content-top (styles/calendar.css) entfällt:
+   sie ragte in Ruhe in den Titel hinein, darum musste dort der Abstand auf
+   --content-top wachsen. */
+[data-mobile-os="android"] #view-calendar .screen-title {
+  margin-bottom: 0;
+}
 
-  [data-mobile-os="android"] .cal-head {
-    margin-top: 0;
-    padding-top: var(--m3-cal-title-gap);
-  }
+[data-mobile-os="android"] .cal-head {
+  margin-top: 0;
+  padding-top: var(--m3-cal-title-gap);
+}
 
-  /* Die 8px Innenabstand unter 23:00 (styles/calendar-panel.css) entfallen:
-     der Abstand zum Plus-Knopf soll vom letzten Stundenfeld aus gemessen
-     genau --m3-fab-gap sein. */
-  [data-mobile-os="android"] .cal-hours {
-    padding-bottom: 0;
-  }
+/* Die 8px Innenabstand unter 23:00 (styles/calendar-panel.css) entfallen:
+   der Abstand zum Plus-Knopf soll vom letzten Stundenfeld aus gemessen
+   genau --m3-fab-gap sein. */
+[data-mobile-os="android"] .cal-hours {
+  padding-bottom: 0;
 }

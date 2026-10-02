@@ -12,7 +12,7 @@
  *
  * „Android (Experiment)“ und die übrigen Fassungen behalten die bisherige Optik.
  * Gilt nur mit data-mobile-os="android" ohne data-mobile-variant an <html>
- * und unterhalb von 1024px.
+ *.
  * Pfad: styles/android-calendar-rings.css
  *
  * ANPASSBARE WERTE (alle in styles/tokens-android.css)
@@ -28,58 +28,56 @@
  * Direkt bei ihrer Regel: der Kreis um „heute“ ist 1px breit (Material 3).
  */
 
-@media (max-width: 1023px) {
-  /* position/isolation: Bezug und eigene Ebene für den Kreis hinter der Zahl
-     (Tage mit Ring haben das schon, styles/calendar-rings.css) */
-  [data-mobile-os="android"]:not([data-mobile-variant]) .cal-day-num {
-    position: relative;
-    isolation: isolate;
-  }
+/* position/isolation: Bezug und eigene Ebene für den Kreis hinter der Zahl
+   (Tage mit Ring haben das schon, styles/calendar-rings.css) */
+[data-mobile-os="android"]:not([data-mobile-variant]) .cal-day-num {
+  position: relative;
+  isolation: isolate;
+}
 
-  /* Der Kreis hinter der Zahl: nur zu sehen, wenn ein Zustand ihn färbt.
-     z-index: hinter der Zahl; er steht im Dokument vor dem Ring, liegt also
-     auch unter dessen Band. */
-  [data-mobile-os="android"]:not([data-mobile-variant]) .cal-day-num::before {
-    content: "";
-    position: absolute; /* position: deckungsgleich mit der Tageszahl, nach innen gerückt */
-    inset: var(--m3-cal-day-inset);
-    z-index: -1;
-    border-radius: 50%;
-  }
+/* Der Kreis hinter der Zahl: nur zu sehen, wenn ein Zustand ihn färbt.
+   z-index: hinter der Zahl; er steht im Dokument vor dem Ring, liegt also
+   auch unter dessen Band. */
+[data-mobile-os="android"]:not([data-mobile-variant]) .cal-day-num::before {
+  content: "";
+  position: absolute; /* position: deckungsgleich mit der Tageszahl, nach innen gerückt */
+  inset: var(--m3-cal-day-inset);
+  z-index: -1;
+  border-radius: 50%;
+}
 
-  /* Mit Ring: der Kreis liegt innen im Ring, mit etwas Luft dazwischen */
-  [data-mobile-os="android"]:not([data-mobile-variant]) .cal-day.has-items .cal-day-num::before {
-    inset: calc(var(--cal-ring-w) + var(--m3-cal-ring-gap));
-  }
+/* Mit Ring: der Kreis liegt innen im Ring, mit etwas Luft dazwischen */
+[data-mobile-os="android"]:not([data-mobile-variant]) .cal-day.has-items .cal-day-num::before {
+  inset: calc(var(--cal-ring-w) + var(--m3-cal-ring-gap));
+}
 
-  /* ---------- Gewählter Tag ---------- */
+/* ---------- Gewählter Tag ---------- */
 
-  [data-mobile-os="android"]:not([data-mobile-variant]) .cal-day.is-selected .cal-day-num {
-    color: var(--m3-on-primary);
-  }
+[data-mobile-os="android"]:not([data-mobile-variant]) .cal-day.is-selected .cal-day-num {
+  color: var(--m3-on-primary);
+}
 
-  [data-mobile-os="android"]:not([data-mobile-variant]) .cal-day.is-selected .cal-day-num::before {
-    background: var(--m3-primary);
-  }
+[data-mobile-os="android"]:not([data-mobile-variant]) .cal-day.is-selected .cal-day-num::before {
+  background: var(--m3-primary);
+}
 
-  /* ---------- Heute ---------- */
+/* ---------- Heute ---------- */
 
-  [data-mobile-os="android"]:not([data-mobile-variant]) .cal-day.is-today:not(.is-selected) .cal-day-num {
-    color: var(--m3-primary);
-  }
+[data-mobile-os="android"]:not([data-mobile-variant]) .cal-day.is-today:not(.is-selected) .cal-day-num {
+  color: var(--m3-primary);
+}
 
-  /* Ohne Ring zeigt ein dünner Kreis „heute“; mit Ring reicht die Farbe der Zahl */
-  [data-mobile-os="android"]:not([data-mobile-variant]) .cal-day.is-today:not(.is-selected):not(.has-items) .cal-day-num::before {
-    box-shadow: inset 0 0 0 1px var(--m3-primary); /* box-shadow: Kreislinie nach innen, verschiebt nichts */
-  }
+/* Ohne Ring zeigt ein dünner Kreis „heute“; mit Ring reicht die Farbe der Zahl */
+[data-mobile-os="android"]:not([data-mobile-variant]) .cal-day.is-today:not(.is-selected):not(.has-items) .cal-day-num::before {
+  box-shadow: inset 0 0 0 1px var(--m3-primary); /* box-shadow: Kreislinie nach innen, verschiebt nichts */
+}
 
-  /* ---------- Drücken ---------- */
+/* ---------- Drücken ---------- */
 
-  [data-mobile-os="android"]:not([data-mobile-variant]) .cal-day:active .cal-day-num {
-    opacity: 1;
-  }
+[data-mobile-os="android"]:not([data-mobile-variant]) .cal-day:active .cal-day-num {
+  opacity: 1;
+}
 
-  [data-mobile-os="android"]:not([data-mobile-variant]) .cal-day:active:not(.is-selected) .cal-day-num::before {
-    background: color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), transparent);
-  }
+[data-mobile-os="android"]:not([data-mobile-variant]) .cal-day:active:not(.is-selected) .cal-day-num::before {
+  background: color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), transparent);
 }

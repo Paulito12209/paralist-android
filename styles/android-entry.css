@@ -16,7 +16,7 @@
  *   Akzentfarbe der Fassung — im Dunkeln graublau statt Blau.
  *
  * Gilt nur mit data-mobile-os="android" an <html> (auch „Android
- * (Experiment)“) und unterhalb von 1024px.
+ * (Experiment)“).
  * Pfad: styles/android-entry.css
  *
  * ANPASSBARE WERTE (alle in styles/tokens-android.css, außer wo genannt)
@@ -46,105 +46,103 @@
   display: none;
 }
 
-@media (max-width: 1023px) {
-  /* ---------- Details nur noch als Blatt ---------- */
+/* ---------- Details nur noch als Blatt ---------- */
 
-  /* Die Karte am Ende von „Inhalt“ entfällt; der Text reicht bis zum
-     Seitenende (src/features/entry/entry-fold.js) */
-  [data-mobile-os="android"] #entry-panel-notes > .details-card {
-    display: none;
+/* Die Karte am Ende von „Inhalt“ entfällt; der Text reicht bis zum
+   Seitenende (src/features/entry/entry-fold.js) */
+[data-mobile-os="android"] #entry-panel-notes > .details-card {
+  display: none;
+}
+
+/* Der Info-Knopf rechts neben „Kopieren“ öffnet das Blatt */
+[data-mobile-os="android"] .entry-info-btn {
+  display: grid;
+}
+
+/* ---------- „Mehr anzeigen“ ---------- */
+
+[data-mobile-os="android"] .entry-more {
+  color: var(--m3-primary);
+}
+
+/* ---------- Blatt „Details“ von unten ---------- */
+
+/* Am unteren Rand verankert, ohne Luft drumherum (das Auswahl-Blatt schwebt
+   mit 12px Rand). transition: der Schleier blendet weich ein. */
+[data-mobile-os="android"] .details-sheet {
+  padding: 0;
+  transition: background-color var(--tasks-panel-slide) ease;
+}
+
+/* transition: gleitet von unten herein;
+   beim Ziehen setzt src/ui/modal-pull.js Lage und Übergang selbst. */
+[data-mobile-os="android"] .details-sheet .sheet {
+  display: flex;
+  flex-direction: column;
+  max-height: var(--m3-sheet-max);
+  padding: 24px 16px 0;
+  border-radius: var(--m3-sheet-radius) var(--m3-sheet-radius) 0 0;
+  background: var(--m3-surface-container);
+  transition: transform var(--tasks-panel-slide) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* @starting-style: woher Blatt und Schleier beim Öffnen kommen — sonst
+   stünden sie sofort da, weil sie eben erst aus display: none auftauchen */
+@starting-style {
+  [data-mobile-os="android"] .details-sheet:not([hidden]) {
+    background-color: transparent;
   }
 
-  /* Der Info-Knopf rechts neben „Kopieren“ öffnet das Blatt */
-  [data-mobile-os="android"] .entry-info-btn {
-    display: grid;
+  [data-mobile-os="android"] .details-sheet:not([hidden]) .sheet {
+    transform: translateY(100%);
   }
+}
 
-  /* ---------- „Mehr anzeigen“ ---------- */
+[data-mobile-os="android"] .details-sheet-title {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: var(--details-head-h);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--icon-soft);
+}
 
-  [data-mobile-os="android"] .entry-more {
-    color: var(--m3-primary);
-  }
+/* Dasselbe Symbol wie hinter „Details“ auf der Karte, aber umgedreht; nur
+   ein Zeichen, keine Tippfläche. transform: dreht es auf den Kopf, statt ein
+   zweites Symbol zu zeichnen. */
+[data-mobile-os="android"] .details-sheet-title .icon {
+  width: var(--page-tool-icon);
+  height: var(--page-tool-icon);
+  margin-left: 4px;
+  transform: rotate(180deg);
+}
 
-  /* ---------- Blatt „Details“ von unten ---------- */
+/* Der Inhalt scrollt in sich (.modal-body, styles/overlays.css); hier ohne
+   dessen Seitenrand und Lücken — die Angaben bringen ihre eigenen mit */
+[data-mobile-os="android"] .details-sheet-body {
+  gap: 0;
+  padding: 0 0 calc(16px + var(--safe-bottom));
+}
 
-  /* Am unteren Rand verankert, ohne Luft drumherum (das Auswahl-Blatt schwebt
-     mit 12px Rand). transition: der Schleier blendet weich ein. */
-  [data-mobile-os="android"] .details-sheet {
-    padding: 0;
-    transition: background-color var(--tasks-panel-slide) ease;
-  }
+/* Im Blatt ist alles sofort zu sehen; auf der Karte blenden die Angaben
+   erst beim Hochscrollen ein (styles/entry-details.css) */
+[data-mobile-os="android"] .details-sheet :is(.details-stats, .details-list) {
+  opacity: 1;
+}
 
-  /* transition: gleitet von unten herein;
-     beim Ziehen setzt src/ui/modal-pull.js Lage und Übergang selbst. */
-  [data-mobile-os="android"] .details-sheet .sheet {
-    display: flex;
-    flex-direction: column;
-    max-height: var(--m3-sheet-max);
-    padding: 24px 16px 0;
-    border-radius: var(--m3-sheet-radius) var(--m3-sheet-radius) 0 0;
-    background: var(--m3-surface-container);
-    transition: transform var(--tasks-panel-slide) cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
+/* ---------- „Verknüpfen“ in der Kopfzeile ---------- */
 
-  /* @starting-style: woher Blatt und Schleier beim Öffnen kommen — sonst
-     stünden sie sofort da, weil sie eben erst aus display: none auftauchen */
-  @starting-style {
-    [data-mobile-os="android"] .details-sheet:not([hidden]) {
-      background-color: transparent;
-    }
+/* margin-left 0: .head-btn schiebt sich sonst selbst an den Rand — das
+   übernimmt hier die Kategorie, die die Mitte füllt */
+[data-mobile-os="android"] .entry-link-btn {
+  display: grid;
+  margin-left: 0;
+  margin-right: calc(-1 * var(--m3-head-tools-pull));
+}
 
-    [data-mobile-os="android"] .details-sheet:not([hidden]) .sheet {
-      transform: translateY(100%);
-    }
-  }
-
-  [data-mobile-os="android"] .details-sheet-title {
-    display: flex;
-    align-items: center;
-    flex: 0 0 auto;
-    height: var(--details-head-h);
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--icon-soft);
-  }
-
-  /* Dasselbe Symbol wie hinter „Details“ auf der Karte, aber umgedreht; nur
-     ein Zeichen, keine Tippfläche. transform: dreht es auf den Kopf, statt ein
-     zweites Symbol zu zeichnen. */
-  [data-mobile-os="android"] .details-sheet-title .icon {
-    width: var(--page-tool-icon);
-    height: var(--page-tool-icon);
-    margin-left: 4px;
-    transform: rotate(180deg);
-  }
-
-  /* Der Inhalt scrollt in sich (.modal-body, styles/overlays.css); hier ohne
-     dessen Seitenrand und Lücken — die Angaben bringen ihre eigenen mit */
-  [data-mobile-os="android"] .details-sheet-body {
-    gap: 0;
-    padding: 0 0 calc(16px + var(--safe-bottom));
-  }
-
-  /* Im Blatt ist alles sofort zu sehen; auf der Karte blenden die Angaben
-     erst beim Hochscrollen ein (styles/entry-details.css) */
-  [data-mobile-os="android"] .details-sheet :is(.details-stats, .details-list) {
-    opacity: 1;
-  }
-
-  /* ---------- „Verknüpfen“ in der Kopfzeile ---------- */
-
-  /* margin-left 0: .head-btn schiebt sich sonst selbst an den Rand — das
-     übernimmt hier die Kategorie, die die Mitte füllt */
-  [data-mobile-os="android"] .entry-link-btn {
-    display: grid;
-    margin-left: 0;
-    margin-right: calc(-1 * var(--m3-head-tools-pull));
-  }
-
-  /* Rechts stehen zwei Knöpfe, links nur der Zurück-Pfeil: fast dieselbe
-     Breite links als Luft, damit die Kategorie genau mittig bleibt */
-  [data-mobile-os="android"] #entry-back {
-    margin-right: calc(var(--head-btn-size) - var(--m3-head-tools-pull));
-  }
+/* Rechts stehen zwei Knöpfe, links nur der Zurück-Pfeil: fast dieselbe
+   Breite links als Luft, damit die Kategorie genau mittig bleibt */
+[data-mobile-os="android"] #entry-back {
+  margin-right: calc(var(--head-btn-size) - var(--m3-head-tools-pull));
 }

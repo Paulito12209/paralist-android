@@ -10,7 +10,7 @@
  * Die Liste der Unterschiede unter Einstellungen › Mehr › Versionen steht in
  * src/data/platform-versions.js.
  * Gilt nur mit data-mobile-os="android" und data-mobile-variant="experiment"
- * an <html> und unterhalb von 1024px.
+ * an <html>.
  * Pfad: styles/android-view-btn.css
  *
  * ANPASSBARE WERTE
@@ -18,20 +18,18 @@
  * --tab-pills-fade / --content-side -> was rechts in der Reiterzeile frei bleibt (styles/tokens.css)
  */
 
-@media (max-width: 1023px) {
-  /* Die Symbole oben entfallen, außer im Kalender (body.is-calendar).
-     !important: die Regeln, die sie in styles/android-sheet.css je Ort
-     einblenden, sind sehr spezifisch (:has mit id) — so bleibt es eine Regel
-     statt einer Kopie von jeder. */
-  [data-mobile-variant="experiment"] body:not(.is-calendar) .view-panel-btn {
-    display: none !important;
-  }
+/* Die Symbole oben entfallen, außer im Kalender (body.is-calendar).
+   !important: die Regeln, die sie in styles/android-sheet.css je Ort
+   einblenden, sind sehr spezifisch (:has mit id) — so bleibt es eine Regel
+   statt einer Kopie von jeder. */
+[data-mobile-variant="experiment"] body:not(.is-calendar) .view-panel-btn {
+  display: none !important;
+}
 
-  [data-mobile-variant="experiment"] .tab-pills-split {
-    display: none;
-  }
+[data-mobile-variant="experiment"] .tab-pills-split {
+  display: none;
+}
 
-  [data-mobile-variant="experiment"] .tab-pills-row {
-    --tab-pills-tools-width: calc(var(--content-side) + var(--tab-pills-fade));
-  }
+[data-mobile-variant="experiment"] .tab-pills-row {
+  --tab-pills-tools-width: calc(var(--content-side) + var(--tab-pills-fade));
 }

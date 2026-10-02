@@ -1,7 +1,7 @@
 /*
  * Die Werte der Android-Fassung (Einstellungen › Mehr › Versionen › Android).
  * Sie gelten nur, solange an <html> data-mobile-os="android" steht, und nur
- * unterhalb von 1024px — die Regeln dazu stehen in styles/android.css,
+ * — die Regeln dazu stehen in styles/android.css,
  * styles/android-tabs.css und styles/android-fab.css. Farben und Maße folgen
  * Material 3 in der Lesart von Google Mail und Google Kalender: neutrale
  * Flächen, blaue Akzente im Hellen, graublaue im Dunkeln.

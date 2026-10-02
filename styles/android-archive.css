@@ -10,7 +10,7 @@
  * Dazu: die Seitenenden der Pille „Zum Archiv“ (styles/view-end.css) und der
  * Platz für die Karte „Ansicht“ (styles/tasks-settings.css) entfallen — das
  * Seitenende kommt hier aus --m3-content-end (styles/android.css).
- * Gilt nur mit data-mobile-os="android" an <html> und unterhalb von 1024px.
+ * Gilt nur mit data-mobile-os="android" an <html>.
  * Pfad: styles/android-archive.css
  *
  * ANPASSBARE WERTE (alle in styles/tokens-android.css, außer wo genannt)
@@ -66,34 +66,32 @@
   color: var(--m3-on-primary-container);
 }
 
-@media (max-width: 1023px) {
-  [data-mobile-os="android"] .m3-archive.is-shown {
-    display: grid;
-  }
+[data-mobile-os="android"] .m3-archive.is-shown {
+  display: grid;
+}
 
-  /* Beim Anlegen und Suchen hat der Knopf nichts zu tun */
-  [data-mobile-os="android"] .nav-shell.is-composing .m3-archive {
-    display: none;
-  }
+/* Beim Anlegen und Suchen hat der Knopf nichts zu tun */
+[data-mobile-os="android"] .nav-shell.is-composing .m3-archive {
+  display: none;
+}
 
-  /* ---------- Seitenende ohne Pille „Zum Archiv“ ---------- */
+/* ---------- Seitenende ohne Pille „Zum Archiv“ ---------- */
 
-  [data-mobile-os="android"] .archive-link-row {
-    display: none;
-  }
+[data-mobile-os="android"] .archive-link-row {
+  display: none;
+}
 
-  /* Die Regeln aus styles/view-end.css rechnen mit der Pille und dem Kopf der
-     Karte „Ansicht“ — beides gibt es hier nicht */
-  [data-mobile-os="android"] .view:has(.archive-link-row),
-  [data-mobile-os="android"] :is(body.is-projects, body.is-collection) :is(#view-home, #view-page) {
-    min-height: 100%;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
+/* Die Regeln aus styles/view-end.css rechnen mit der Pille und dem Kopf der
+   Karte „Ansicht“ — beides gibt es hier nicht */
+[data-mobile-os="android"] .view:has(.archive-link-row),
+[data-mobile-os="android"] :is(body.is-projects, body.is-collection) :is(#view-home, #view-page) {
+  min-height: 100%;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
 
-  [data-mobile-os="android"] #view-tasks {
-    padding-bottom: 0;
-  }
+[data-mobile-os="android"] #view-tasks {
+  padding-bottom: 0;
 }
 
 /* ---------- Die angehobene Zeile ---------- */

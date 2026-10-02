@@ -11,7 +11,7 @@
  * oder das Blatt nach unten ziehen (src/ui/view-panel.js).
  * Außerdem: neben „Projekte“ auf der Übersicht entfällt der Pfeil — die
  * Überschrift öffnet die Seite Projekte trotzdem.
- * Gilt nur mit data-mobile-os="android" an <html> und unterhalb von 1024px.
+ * Gilt nur mit data-mobile-os="android" an <html>.
  * Pfad: styles/android-sheet.css
  *
  * ANPASSBARE WERTE (alle in styles/tokens-android.css)
@@ -44,329 +44,327 @@
  * Filter-Chips: Schrift 14px, Icon 18px.
  */
 
-@media (max-width: 1023px) {
-  /* ---------- Das Blatt ---------- */
+/* ---------- Das Blatt ---------- */
 
-  /* --view-panel-peek: eingeklappt schaut nichts hervor (gelesen von src/ui/view-panel.js).
-     z-index 25: über Leiste und Plus-Knopf (20), unter dem Plus-Menü (30) und den Blättern (ab 36).
-     visibility: eingeklappt wird das Blatt nach dem Wegschieben ganz ausgeblendet,
-     damit sein Schatten nicht an der Unterkante hervorschaut und Tab es nicht erreicht. */
-  [data-mobile-os="android"] .view-panel {
-    --view-panel-peek: 0px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 25;
-    max-height: var(--m3-sheet-max);
-    /* max-width + margin auto: auf einem Tablet steht das Blatt mittig und nicht über die ganze Breite */
-    max-width: var(--m3-sheet-width);
-    margin-inline: auto;
-    /* padding oben 0: den Platz über dem Inhalt macht der Kopf; 24px seitlich wie das Blatt „Filtern“ */
-    padding: 0 24px calc(8px + var(--safe-bottom));
-    border-radius: var(--m3-sheet-radius) var(--m3-sheet-radius) 0 0;
-    background: var(--m3-surface-container);
-    transform: translateY(100%);
-    visibility: hidden;
-    transition:
-      transform var(--tasks-panel-slide) cubic-bezier(0.2, 0.8, 0.2, 1),
-      visibility 0s linear var(--tasks-panel-slide);
-  }
+/* --view-panel-peek: eingeklappt schaut nichts hervor (gelesen von src/ui/view-panel.js).
+   z-index 25: über Leiste und Plus-Knopf (20), unter dem Plus-Menü (30) und den Blättern (ab 36).
+   visibility: eingeklappt wird das Blatt nach dem Wegschieben ganz ausgeblendet,
+   damit sein Schatten nicht an der Unterkante hervorschaut und Tab es nicht erreicht. */
+[data-mobile-os="android"] .view-panel {
+  --view-panel-peek: 0px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  max-height: var(--m3-sheet-max);
+  /* max-width + margin auto: auf einem Tablet steht das Blatt mittig und nicht über die ganze Breite */
+  max-width: var(--m3-sheet-width);
+  margin-inline: auto;
+  /* padding oben 0: den Platz über dem Inhalt macht der Kopf; 24px seitlich wie das Blatt „Filtern“ */
+  padding: 0 24px calc(8px + var(--safe-bottom));
+  border-radius: var(--m3-sheet-radius) var(--m3-sheet-radius) 0 0;
+  background: var(--m3-surface-container);
+  transform: translateY(100%);
+  visibility: hidden;
+  transition:
+    transform var(--tasks-panel-slide) cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear var(--tasks-panel-slide);
+}
 
-  [data-mobile-os="android"] .view-panel.is-expanded,
-  [data-mobile-os="android"] .view-panel.is-dragging {
-    transform: none;
-    visibility: visible;
-    transition: transform var(--tasks-panel-slide) cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
+[data-mobile-os="android"] .view-panel.is-expanded,
+[data-mobile-os="android"] .view-panel.is-dragging {
+  transform: none;
+  visibility: visible;
+  transition: transform var(--tasks-panel-slide) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 
-  /* Beim Ziehen folgt das Blatt dem Finger (transform setzt das Skript direkt) */
-  [data-mobile-os="android"] .view-panel.is-dragging {
-    transition: none;
-  }
+/* Beim Ziehen folgt das Blatt dem Finger (transform setzt das Skript direkt) */
+[data-mobile-os="android"] .view-panel.is-dragging {
+  transition: none;
+}
 
-  /* Kein Griff: wie in Google Tasks schließt man das Blatt über den Schleier,
-     Zurück oder Ziehen am Blatt. Oben 24px Luft über der Überschrift. */
-  [data-mobile-os="android"] .view-panel-head {
-    height: auto; /* height: auto statt fester Kopfhöhe — Luft, Titel und Luft darunter */
-    padding: 24px 0 8px;
-    margin-right: 0; /* margin-right: die Karte „Details“ zieht ihren Kopf sonst 8px nach rechts */
-  }
+/* Kein Griff: wie in Google Tasks schließt man das Blatt über den Schleier,
+   Zurück oder Ziehen am Blatt. Oben 24px Luft über der Überschrift. */
+[data-mobile-os="android"] .view-panel-head {
+  height: auto; /* height: auto statt fester Kopfhöhe — Luft, Titel und Luft darunter */
+  padding: 24px 0 8px;
+  margin-right: 0; /* margin-right: die Karte „Details“ zieht ihren Kopf sonst 8px nach rechts */
+}
 
-  /* Die Überschrift als „Title Large“ (22/28) in der Hauptfarbe der Fläche;
-     das Kartensymbol entfällt — geschlossen wird über Schleier, Ziehen und Zurück */
-  [data-mobile-os="android"] .view-panel-head .details-title {
-    font-size: 22px;
-    line-height: 28px;
-    font-weight: 400;
-    color: var(--m3-on-surface);
-  }
+/* Die Überschrift als „Title Large“ (22/28) in der Hauptfarbe der Fläche;
+   das Kartensymbol entfällt — geschlossen wird über Schleier, Ziehen und Zurück */
+[data-mobile-os="android"] .view-panel-head .details-title {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 400;
+  color: var(--m3-on-surface);
+}
 
-  [data-mobile-os="android"] .view-panel-toggle {
-    display: none;
-  }
+[data-mobile-os="android"] .view-panel-toggle {
+  display: none;
+}
 
-  /* Die Zeilen als Material-3-Liste: 56px hoch, Bezeichnung in der Hauptfarbe,
-     der Wert rechts blasser (on-surface-variant). Keine Linie unter der
-     Überschrift — wie die Blätter „Filtern“ und „Sortieren nach“. */
-  [data-mobile-os="android"] .view-panel .details-list {
-    border-top: none;
-  }
+/* Die Zeilen als Material-3-Liste: 56px hoch, Bezeichnung in der Hauptfarbe,
+   der Wert rechts blasser (on-surface-variant). Keine Linie unter der
+   Überschrift — wie die Blätter „Filtern“ und „Sortieren nach“. */
+[data-mobile-os="android"] .view-panel .details-list {
+  border-top: none;
+}
 
-  /* gap 8px: „Darstellung“ + „Stundenraster | Liste“ im Kalender passen so bei 375px */
-  [data-mobile-os="android"] .view-panel .details-row {
-    gap: 8px;
-    min-height: var(--m3-sheet-row-h);
-    padding-block: 0;
-    font-size: 16px;
-    align-items: center;
-  }
+/* gap 8px: „Darstellung“ + „Stundenraster | Liste“ im Kalender passen so bei 375px */
+[data-mobile-os="android"] .view-panel .details-row {
+  gap: 8px;
+  min-height: var(--m3-sheet-row-h);
+  padding-block: 0;
+  font-size: 16px;
+  align-items: center;
+}
 
-  /* white-space: „Spalten nach“ bleibt eine Zeile, auch neben dem breiten Segment */
-  [data-mobile-os="android"] .view-panel .details-row-label {
-    color: var(--m3-on-surface);
-    white-space: nowrap;
-  }
+/* white-space: „Spalten nach“ bleibt eine Zeile, auch neben dem breiten Segment */
+[data-mobile-os="android"] .view-panel .details-row-label {
+  color: var(--m3-on-surface);
+  white-space: nowrap;
+}
 
-  /* Der Wert als Begleittext („Supporting text“) in 14px, damit „Zuletzt geöffnet ·
-     Neueste zuerst“ auch bei 375px noch neben der Bezeichnung Platz hat */
-  [data-mobile-os="android"] .view-panel .details-row-value {
-    color: var(--m3-on-surface-variant);
-    font-size: 14px;
-  }
+/* Der Wert als Begleittext („Supporting text“) in 14px, damit „Zuletzt geöffnet ·
+   Neueste zuerst“ auch bei 375px noch neben der Bezeichnung Platz hat */
+[data-mobile-os="android"] .view-panel .details-row-value {
+  color: var(--m3-on-surface-variant);
+  font-size: 14px;
+}
 
-  /* Der Schleier: nur da, solange das Blatt offen ist. position/inset: deckt das
-     ganze Gerät. Ein Tipp darauf klappt das Blatt zu (src/ui/view-panel.js). */
-  [data-mobile-os="android"] .view-panel-scrim {
-    display: block;
-    position: absolute;
-    inset: 0;
-    z-index: 25;
-    background: rgba(0, 0, 0, var(--m3-sheet-scrim-alpha));
-    opacity: 0;
-    pointer-events: none; /* pointer-events: unsichtbar lässt er jeden Tipp zur Seite durch */
-    transition: opacity var(--tasks-panel-slide) ease; /* transition: blendet mit dem Blatt ein und aus */
-  }
+/* Der Schleier: nur da, solange das Blatt offen ist. position/inset: deckt das
+   ganze Gerät. Ein Tipp darauf klappt das Blatt zu (src/ui/view-panel.js). */
+[data-mobile-os="android"] .view-panel-scrim {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  background: rgba(0, 0, 0, var(--m3-sheet-scrim-alpha));
+  opacity: 0;
+  pointer-events: none; /* pointer-events: unsichtbar lässt er jeden Tipp zur Seite durch */
+  transition: opacity var(--tasks-panel-slide) ease; /* transition: blendet mit dem Blatt ein und aus */
+}
 
-  [data-mobile-os="android"] .view-panel-scrim:has(+ .view-panel.is-expanded) {
-    opacity: 1;
-    pointer-events: auto;
-  }
+[data-mobile-os="android"] .view-panel-scrim:has(+ .view-panel.is-expanded) {
+  opacity: 1;
+  pointer-events: auto;
+}
 
-  /* ---------- Bedienelemente im Blatt (Material 3) ---------- */
+/* ---------- Bedienelemente im Blatt (Material 3) ---------- */
 
-  /* Antippbare Zeilen (Sortieren, Filtern, Projekte wählen): statt Verblassen
-     ein getöntes Band über die ganze Breite des Blatts. Negativer Rand plus
-     gleicher Innenabstand: das Band reicht bis an die Kante, der Text bleibt stehen. */
-  [data-mobile-os="android"] .view-panel :is(.details-row.is-editable, .tasks-filter-row) {
-    width: calc(100% + 48px); /* width: ein Knopf wäre sonst nur so breit wie sein Text */
-    margin-inline: -24px;
-    padding-inline: 24px;
-  }
+/* Antippbare Zeilen (Sortieren, Filtern, Projekte wählen): statt Verblassen
+   ein getöntes Band über die ganze Breite des Blatts. Negativer Rand plus
+   gleicher Innenabstand: das Band reicht bis an die Kante, der Text bleibt stehen. */
+[data-mobile-os="android"] .view-panel :is(.details-row.is-editable, .tasks-filter-row) {
+  width: calc(100% + 48px); /* width: ein Knopf wäre sonst nur so breit wie sein Text */
+  margin-inline: -24px;
+  padding-inline: 24px;
+}
 
-  [data-mobile-os="android"] .view-panel :is(.details-row.is-editable, .tasks-filter-btn):active {
-    opacity: 1;
-  }
+[data-mobile-os="android"] .view-panel :is(.details-row.is-editable, .tasks-filter-btn):active {
+  opacity: 1;
+}
 
-  [data-mobile-os="android"] .view-panel :is(.details-row.is-editable:active, .tasks-filter-row:has(.tasks-filter-btn:not(:disabled):active)) {
-    background: color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), transparent);
-  }
+[data-mobile-os="android"] .view-panel :is(.details-row.is-editable:active, .tasks-filter-row:has(.tasks-filter-btn:not(:disabled):active)) {
+  background: color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), transparent);
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-info {
-    color: var(--m3-on-surface-variant);
-  }
+[data-mobile-os="android"] .view-panel .tasks-info {
+  color: var(--m3-on-surface-variant);
+}
 
-  /* Segment „Liste | Board“ wie „ist | ist nicht“ im Blatt „Filtern“ (Material 3
-     „Segmented button“): umrandet, gewählter Knopf getönt mit Haken, jeder
-     Knopf mit Wort. overflow: die Ecken der Tönung folgen der runden Umrandung. */
-  [data-mobile-os="android"] .view-panel .tasks-seg {
-    flex: none;
-    padding: 0;
-    overflow: hidden;
-    border: 1px solid var(--m3-outline-variant);
-    background: none;
-  }
+/* Segment „Liste | Board“ wie „ist | ist nicht“ im Blatt „Filtern“ (Material 3
+   „Segmented button“): umrandet, gewählter Knopf getönt mit Haken, jeder
+   Knopf mit Wort. overflow: die Ecken der Tönung folgen der runden Umrandung. */
+[data-mobile-os="android"] .view-panel .tasks-seg {
+  flex: none;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--m3-outline-variant);
+  background: none;
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-seg-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-    height: 32px;
-    padding-inline: 12px; /* 12px statt 14px wie im Filter-Blatt: „Spalten nach“ + „Status | Dringlichkeit“ passen so bei 375px */
-    border-radius: 0; /* border-radius: die Rundung trägt die Umrandung, nicht der Knopf */
-    color: var(--m3-on-surface);
-    font-size: 13px;
-    font-weight: 500;
-  }
+[data-mobile-os="android"] .view-panel .tasks-seg-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 32px;
+  padding-inline: 12px; /* 12px statt 14px wie im Filter-Blatt: „Spalten nach“ + „Status | Dringlichkeit“ passen so bei 375px */
+  border-radius: 0; /* border-radius: die Rundung trägt die Umrandung, nicht der Knopf */
+  color: var(--m3-on-surface);
+  font-size: 13px;
+  font-weight: 500;
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-seg-btn + .tasks-seg-btn {
-    border-left: 1px solid var(--m3-outline-variant);
-  }
+[data-mobile-os="android"] .view-panel .tasks-seg-btn + .tasks-seg-btn {
+  border-left: 1px solid var(--m3-outline-variant);
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-seg-btn.is-on {
-    background: var(--m3-secondary-container);
-    color: var(--m3-on-secondary-container);
-  }
+[data-mobile-os="android"] .view-panel .tasks-seg-btn.is-on {
+  background: var(--m3-secondary-container);
+  color: var(--m3-on-secondary-container);
+}
 
-  /* Das Wort steht immer; beim gewählten Knopf ersetzt der Haken das Icon */
-  [data-mobile-os="android"] .view-panel .tasks-seg-btn.has-icon .tasks-seg-label {
-    display: inline;
-  }
+/* Das Wort steht immer; beim gewählten Knopf ersetzt der Haken das Icon */
+[data-mobile-os="android"] .view-panel .tasks-seg-btn.has-icon .tasks-seg-label {
+  display: inline;
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-seg-btn.is-on .tasks-seg-check {
-    display: block;
-  }
+[data-mobile-os="android"] .view-panel .tasks-seg-btn.is-on .tasks-seg-check {
+  display: block;
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-seg-btn.is-on .tasks-seg-icon {
-    display: none;
-  }
+[data-mobile-os="android"] .view-panel .tasks-seg-btn.is-on .tasks-seg-icon {
+  display: none;
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-seg-btn .icon {
-    flex: none;
-    width: 16px;
-    height: 16px;
-  }
+[data-mobile-os="android"] .view-panel .tasks-seg-btn .icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
 
-  /* box-shadow innen: tönt beim Drücken auch den gewählten Knopf, ohne seine Fläche zu ersetzen */
-  [data-mobile-os="android"] .view-panel .tasks-seg-btn:active {
-    opacity: 1;
-    box-shadow: inset 0 0 0 100px color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), transparent);
-  }
+/* box-shadow innen: tönt beim Drücken auch den gewählten Knopf, ohne seine Fläche zu ersetzen */
+[data-mobile-os="android"] .view-panel .tasks-seg-btn:active {
+  opacity: 1;
+  box-shadow: inset 0 0 0 100px color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), transparent);
+}
 
-  /* Schalter „Nur Favoriten“ nach Material 3 „Switch“: aus = umrandete Bahn mit
-     kleinem Knopf, an = Bahn in der Akzentfarbe mit großem Knopf. Die Maße
-     gehen von der Innenkante des 2px-Rands aus (Innenfläche 48 × 28px). */
-  [data-mobile-os="android"] .view-panel .tasks-switch {
-    width: 52px;
-    height: 32px;
-    border: 2px solid var(--m3-on-surface-variant);
-    background: var(--m3-surface-container-high);
-    transition: background 0.18s ease, border-color 0.18s ease; /* transition: Bahn und Rand färben sich weich */
-  }
+/* Schalter „Nur Favoriten“ nach Material 3 „Switch“: aus = umrandete Bahn mit
+   kleinem Knopf, an = Bahn in der Akzentfarbe mit großem Knopf. Die Maße
+   gehen von der Innenkante des 2px-Rands aus (Innenfläche 48 × 28px). */
+[data-mobile-os="android"] .view-panel .tasks-switch {
+  width: 52px;
+  height: 32px;
+  border: 2px solid var(--m3-on-surface-variant);
+  background: var(--m3-surface-container-high);
+  transition: background 0.18s ease, border-color 0.18s ease; /* transition: Bahn und Rand färben sich weich */
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-switch-knob {
-    top: 6px;
-    left: 6px;
-    width: 16px;
-    height: 16px;
-    background: var(--m3-on-surface-variant);
-    box-shadow: none;
-    /* transition: der Knopf gleitet und wächst zugleich */
-    transition: transform 0.18s ease, width 0.18s ease, height 0.18s ease, top 0.18s ease, background 0.18s ease;
-  }
+[data-mobile-os="android"] .view-panel .tasks-switch-knob {
+  top: 6px;
+  left: 6px;
+  width: 16px;
+  height: 16px;
+  background: var(--m3-on-surface-variant);
+  box-shadow: none;
+  /* transition: der Knopf gleitet und wächst zugleich */
+  transition: transform 0.18s ease, width 0.18s ease, height 0.18s ease, top 0.18s ease, background 0.18s ease;
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-switch.is-on {
-    border-color: var(--m3-primary);
-    background: var(--m3-primary);
-  }
+[data-mobile-os="android"] .view-panel .tasks-switch.is-on {
+  border-color: var(--m3-primary);
+  background: var(--m3-primary);
+}
 
-  /* An: 24px groß, 2px vom Rand; transform: 16px weiter rechts als „aus“ (6 + 16 = 22 = 48 − 24 − 2) */
-  [data-mobile-os="android"] .view-panel .tasks-switch.is-on .tasks-switch-knob {
-    top: 2px;
-    width: 24px;
-    height: 24px;
-    background: var(--m3-on-primary);
-    transform: translateX(16px);
-  }
+/* An: 24px groß, 2px vom Rand; transform: 16px weiter rechts als „aus“ (6 + 16 = 22 = 48 − 24 − 2) */
+[data-mobile-os="android"] .view-panel .tasks-switch.is-on .tasks-switch-knob {
+  top: 2px;
+  width: 24px;
+  height: 24px;
+  background: var(--m3-on-primary);
+  transform: translateX(16px);
+}
 
-  /* Filter-Chips unter „Filtern“: wie die gewählten Chips im Blatt „Filtern“ */
-  [data-mobile-os="android"] .view-panel .tasks-filter-chips {
-    gap: 8px;
-  }
+/* Filter-Chips unter „Filtern“: wie die gewählten Chips im Blatt „Filtern“ */
+[data-mobile-os="android"] .view-panel .tasks-filter-chips {
+  gap: 8px;
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-filter-chip {
-    gap: 8px;
-    height: var(--m3-chip-h);
-    padding: 0 8px;
-    border-radius: var(--m3-chip-radius);
-    background: var(--m3-secondary-container);
-    color: var(--m3-on-secondary-container);
-    font-size: 14px;
-    font-weight: 500;
-  }
+[data-mobile-os="android"] .view-panel .tasks-filter-chip {
+  gap: 8px;
+  height: var(--m3-chip-h);
+  padding: 0 8px;
+  border-radius: var(--m3-chip-radius);
+  background: var(--m3-secondary-container);
+  color: var(--m3-on-secondary-container);
+  font-size: 14px;
+  font-weight: 500;
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-filter-chip .icon {
-    width: 18px;
-    height: 18px;
-  }
+[data-mobile-os="android"] .view-panel .tasks-filter-chip .icon {
+  width: 18px;
+  height: 18px;
+}
 
-  [data-mobile-os="android"] .view-panel .tasks-filter-chip:active {
-    opacity: 1;
-    box-shadow: inset 0 0 0 100px color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), transparent);
-  }
+[data-mobile-os="android"] .view-panel .tasks-filter-chip:active {
+  opacity: 1;
+  box-shadow: inset 0 0 0 100px color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), transparent);
+}
 
-  /* ---------- Das Symbol „Ansicht“ ---------- */
+/* ---------- Das Symbol „Ansicht“ ---------- */
 
-  [data-mobile-os="android"] .view-panel-btn {
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    color: var(--m3-on-surface-variant);
-  }
+[data-mobile-os="android"] .view-panel-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--m3-on-surface-variant);
+}
 
-  [data-mobile-os="android"] .view-panel-btn .icon {
-    width: 22px;
-    height: 22px;
-  }
+[data-mobile-os="android"] .view-panel-btn .icon {
+  width: 22px;
+  height: 22px;
+}
 
-  [data-mobile-os="android"] .view-panel-btn:active {
-    opacity: 0.55;
-  }
+[data-mobile-os="android"] .view-panel-btn:active {
+  opacity: 0.55;
+}
 
-  /* Die Projekte-Zeile trägt statt des Kartensymbols die zwei Regler, in
-     derselben Farbe und Größe wie die Werkzeuge neben „Verknüpfte Einträge“
-     (--icon-soft, --page-tool-icon) */
-  [data-mobile-os="android"] .view-panel-btn.is-filter {
-    color: var(--icon-soft);
-  }
+/* Die Projekte-Zeile trägt statt des Kartensymbols die zwei Regler, in
+   derselben Farbe und Größe wie die Werkzeuge neben „Verknüpfte Einträge“
+   (--icon-soft, --page-tool-icon) */
+[data-mobile-os="android"] .view-panel-btn.is-filter {
+  color: var(--icon-soft);
+}
 
-  [data-mobile-os="android"] .view-panel-btn.is-filter .icon {
-    width: var(--page-tool-icon);
-    height: var(--page-tool-icon);
-  }
+[data-mobile-os="android"] .view-panel-btn.is-filter .icon {
+  width: var(--page-tool-icon);
+  height: var(--page-tool-icon);
+}
 
-  /* Es steht an der Stelle von „… hinzufügen“ in der Reiterzeile; Anlegen
-     geht über den Plus-Knopf und die Zeile „… hinzufügen“ unter der Liste. */
-  [data-mobile-os="android"] .tab-pills-end .add-btn {
-    display: none;
-  }
+/* Es steht an der Stelle von „… hinzufügen“ in der Reiterzeile; Anlegen
+   geht über den Plus-Knopf und die Zeile „… hinzufügen“ unter der Liste. */
+[data-mobile-os="android"] .tab-pills-end .add-btn {
+  display: none;
+}
 
-  /* Ohne Trennlinie: an ihrer Stelle bleibt Luft, um --m3-tab-tools-air
-     breiter als vorher Linie und Abstand. Nicht in „Android (Experiment)“ — das nimmt
-     das Symbol ganz heraus (styles/android-view-btn.css). */
-  [data-mobile-os="android"]:not([data-mobile-variant="experiment"]) .tab-pills-split {
-    display: none;
-  }
+/* Ohne Trennlinie: an ihrer Stelle bleibt Luft, um --m3-tab-tools-air
+   breiter als vorher Linie und Abstand. Nicht in „Android (Experiment)“ — das nimmt
+   das Symbol ganz heraus (styles/android-view-btn.css). */
+[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) .tab-pills-split {
+  display: none;
+}
 
-  [data-mobile-os="android"]:not([data-mobile-variant="experiment"]) .tab-pills-end {
-    padding-left: calc(var(--tab-pills-btn-gap) + 1px + var(--m3-tab-tools-air));
-  }
+[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) .tab-pills-end {
+  padding-left: calc(var(--tab-pills-btn-gap) + 1px + var(--m3-tab-tools-air));
+}
 
-  /* Die Reiter laufen um dieselbe Luft früher aus, damit der letzte nicht
-     unter dem Symbol verschwindet */
-  [data-mobile-os="android"]:not([data-mobile-variant="experiment"]) .tab-pills-row {
-    --tab-pills-tools-width: calc(var(--content-side) + var(--tab-pills-fade) + 1px + var(--tab-pills-btn-gap) + var(--m3-tab-tools-air) + 32px);
-  }
+/* Die Reiter laufen um dieselbe Luft früher aus, damit der letzte nicht
+   unter dem Symbol verschwindet */
+[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) .tab-pills-row {
+  --tab-pills-tools-width: calc(var(--content-side) + var(--tab-pills-fade) + 1px + var(--tab-pills-btn-gap) + var(--m3-tab-tools-air) + 32px);
+}
 
-  /* Sammlungen: kein Symbol „Ansicht“ in der Kopfzeile — Sortieren und Filtern
-     stehen in der Werkzeugzeile unter dem Titel (styles/android-card.css) */
-  [data-mobile-os="android"] .page-head .view-panel-btn {
-    display: none;
-  }
+/* Sammlungen: kein Symbol „Ansicht“ in der Kopfzeile — Sortieren und Filtern
+   stehen in der Werkzeugzeile unter dem Titel (styles/android-card.css) */
+[data-mobile-os="android"] .page-head .view-panel-btn {
+  display: none;
+}
 
-  /* Kalender: „KW“ rückt nach rechts neben das Symbol, statt mittig zu stehen */
-  [data-mobile-os="android"] .cal-kw {
-    margin-left: auto;
-  }
+/* Kalender: „KW“ rückt nach rechts neben das Symbol, statt mittig zu stehen */
+[data-mobile-os="android"] .cal-kw {
+  margin-left: auto;
+}
 
-  [data-mobile-os="android"] .cal-date-row .view-panel-btn {
-    margin-left: -4px;
-  }
+[data-mobile-os="android"] .cal-date-row .view-panel-btn {
+  margin-left: -4px;
+}
 
-  /* ---------- „Projekte“ ohne Pfeil ---------- */
+/* ---------- „Projekte“ ohne Pfeil ---------- */
 
-  [data-mobile-os="android"] .project-head .section-link .icon {
-    display: none;
-  }
+[data-mobile-os="android"] .project-head .section-link .icon {
+  display: none;
 }

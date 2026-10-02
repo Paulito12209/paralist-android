@@ -5,7 +5,7 @@
  * Tipp legt einen Schleier über die App (dunkel im Dunkelmodus, weißlich im
  * Hellmodus) und stapelt rechts die Arten zum Anlegen übereinander — wie das
  * Plus-Menü in Google Kalender. Aufgebaut wird beides in src/shell/android-fab.js.
- * Gilt nur mit data-mobile-os="android" an <html> und unterhalb von 1024px.
+ * Gilt nur mit data-mobile-os="android" an <html>.
  * Pfad: styles/android-fab.css
  *
  * ANPASSBARE WERTE (alle in styles/tokens-android.css)
@@ -84,21 +84,19 @@
   opacity: 0;
 }
 
-@media (max-width: 1023px) {
-  [data-mobile-os="android"] .m3-fab {
-    display: flex;
-  }
+[data-mobile-os="android"] .m3-fab {
+  display: flex;
+}
 
-  /* Beim Anlegen und Suchen hat der Knopf nichts zu tun */
-  [data-mobile-os="android"] .nav-shell.is-composing .m3-fab {
-    display: none;
-  }
+/* Beim Anlegen und Suchen hat der Knopf nichts zu tun */
+[data-mobile-os="android"] .nav-shell.is-composing .m3-fab {
+  display: none;
+}
 
-  /* Meldungen (styles/toast.css) stehen über Plus- und Archiv-Knopf statt
-     dahinter — wie die Snackbar in Material 3 */
-  [data-mobile-os="android"] .toast-host {
-    margin-bottom: calc(var(--m3-fab-size) + 2 * var(--m3-fab-gap));
-  }
+/* Meldungen (styles/toast.css) stehen über Plus- und Archiv-Knopf statt
+   dahinter — wie die Snackbar in Material 3 */
+[data-mobile-os="android"] .toast-host {
+  margin-bottom: calc(var(--m3-fab-size) + 2 * var(--m3-fab-gap));
 }
 
 /* ---------- Das Menü ---------- */

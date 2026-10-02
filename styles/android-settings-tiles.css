@@ -6,7 +6,7 @@
  * „Surface container“, Icon links, Name, rechts Wert und Pfeil.
  * Überschreibt die flachen Zeilen aus styles/android-pages-content.css, gilt
  * aber nur für die Einstellungen (#profile), nicht für den Fortschritt, und
- * nicht im „Android (Experiment)“. Nur unterhalb von 1024px.
+ * nicht im „Android (Experiment)“. Nur.
  * Pfad: styles/android-settings-tiles.css
  *
  * ANPASSBARE WERTE (alle in styles/tokens-android.css)
@@ -23,30 +23,28 @@
  * Text über dem Text der Kachel steht.
  */
 
-@media (max-width: 1023px) {
-  :root[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) #profile .modal-body > :is(.plist, .settings-group) {
-    margin-inline: var(--m3-page-edge); /* margin-inline: die Kacheln halten den Rand selbst und sind keine Vollbreite-Zeilen mehr */
-    display: flex;
-    flex-direction: column;
-    gap: var(--m3-page-tile-gap);
-  }
+:root[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) #profile .modal-body > :is(.plist, .settings-group) {
+  margin-inline: var(--m3-page-edge); /* margin-inline: die Kacheln halten den Rand selbst und sind keine Vollbreite-Zeilen mehr */
+  display: flex;
+  flex-direction: column;
+  gap: var(--m3-page-tile-gap);
+}
 
-  :root[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) #profile :is(.plist-row, .settings-row) {
-    background: var(--m3-surface-container);
-    border-radius: var(--m3-page-card-radius);
-  }
+:root[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) #profile :is(.plist-row, .settings-row) {
+  background: var(--m3-surface-container);
+  border-radius: var(--m3-page-card-radius);
+}
 
-  /* Gedrückt: Tönung über der Kachelfläche statt über dem Seitengrund */
-  :root[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) #profile :is(.plist-row, .settings-row):active {
-    background: color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), var(--m3-surface-container));
-  }
+/* Gedrückt: Tönung über der Kachelfläche statt über dem Seitengrund */
+:root[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) #profile :is(.plist-row, .settings-row):active {
+  background: color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), var(--m3-surface-container));
+}
 
-  :root[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) #profile .psection {
-    padding: 0 var(--m3-page-edge); /* padding-inline: Text steht über dem Text der Kachel, nicht über ihrer Kante */
-    margin-bottom: 0;
-  }
+:root[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) #profile .psection {
+  padding: 0 var(--m3-page-edge); /* padding-inline: Text steht über dem Text der Kachel, nicht über ihrer Kante */
+  margin-bottom: 0;
+}
 
-  :root[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) #profile :is(.settings-note, .account-note) {
-    padding-inline: var(--m3-page-edge);
-  }
+:root[data-mobile-os="android"]:not([data-mobile-variant="experiment"]) #profile :is(.settings-note, .account-note) {
+  padding-inline: var(--m3-page-edge);
 }
