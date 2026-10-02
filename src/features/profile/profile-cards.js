@@ -1,12 +1,15 @@
 /*
  * Die Karten im Profil-Blatt: Kopf mit Bild und Namen und die Listen darunter
- * (Mehr, App, Konto, Support). Nutzungszeit und Serie stehen in
+ * (Mehr, App, Konto, Support). Der Name im Kopf ist ein Schreibfeld: ein
+ * Tipp darauf setzt den Cursor, das Bild zeigt die Initialen dazu
+ * (src/features/profile/profile-name.js). Nutzungszeit und Serie stehen in
  * src/ui/usage-pages.js (im Fortschritt).
  * Pfad: src/features/profile/profile-cards.js
  *
  * ANPASSBARE WERTE IN DIESER DATEI
  * -----------------------------------
- * Name, Mailadresse, Plan und Version im Kopf stehen in src/data/account.js.
+ * namePlaceholder -> was im leeren Namensfeld steht
+ * Mailadresse, Plan und Version im Kopf stehen in src/data/account.js.
  * listSections   -> welche Zeilen unter welcher Überschrift stehen; `when`
  *                   zeigt eine Zeile oder einen Abschnitt nur ohne Konto
  *                   („local“, Phase 1) oder nur mit Konto („account“, Phase 2)
@@ -16,14 +19,15 @@
  */
 
 import { escapeHtml, icon } from "../../core/html.js";
-import { account } from "../../data/account.js";
+import { account, accountInitials, accountName, maxNameLength } from "../../data/account.js";
 import { hasAccount } from "./account-phase.js";
 import { currentPhoto } from "./avatar.js";
 import { versionsSummary } from "./versions.js";
 
-/* Die festen Angaben im Kopf des Blatts: Name, Mail, Plan, Version und
-   Initialen stehen in src/data/account.js. */
+/* Die festen Angaben im Kopf des Blatts: Mail, Plan und Version stehen in
+   src/data/account.js; der Name kommt aus dem Speicher. */
 const profile = account;
+const namePlaceholder = "Dein Name";
 
 /*
  * Die beiden Wege zum öffentlichen Board. Getrennt, weil man das Formular
@@ -40,10 +44,10 @@ export function appVersion() {
   return profile.version;
 }
 
-/** Das runde Bild oder die Initialen. */
+/** Das runde Bild oder die Initialen des Namens. */
 export function avatarMarkup() {
   const photo = currentPhoto();
-  return photo ? `<img src="${photo}" alt="">` : profile.initials;
+  return photo ? `<img src="${photo}" alt="">` : accountInitials();
 }
 
 /** Die Zeile unter der Mailadresse: „Pro · Dabei seit …“, ohne Konto (Phase 1) nur „Dabei seit …“. */
@@ -59,7 +63,7 @@ export function identityCard() {
         <button class="profile-avatar" type="button" data-avatar-view="1" aria-label="Profilbild anzeigen">${avatarMarkup()}</button>
         <button class="profile-avatar-edit" type="button" data-avatar-edit="1" aria-label="Profilbild ändern">${icon("pencil")}</button>
       </div>
-      <p class="profile-name">${escapeHtml(profile.name)}</p>
+      <p class="profile-name" contenteditable="plaintext-only" role="textbox" aria-label="Name" data-profile-name="1" data-placeholder="${namePlaceholder}" data-max-length="${maxNameLength}" spellcheck="false" autocapitalize="words" enterkeyhint="done">${escapeHtml(accountName())}</p>
       ${hasAccount() ? `<p class="profile-mail">${escapeHtml(profile.mail)}</p>` : ""}
       <p class="profile-meta">${escapeHtml(metaLine())}</p>
     </section>

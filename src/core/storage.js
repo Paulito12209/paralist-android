@@ -14,6 +14,8 @@ export const storageKeys = {
   usage: "paralist-usage",
   avatar: "paralist-avatar",
   avatarSource: "paralist-avatar-source",
+  /* Der selbst eingetippte Name im Profil (src/data/account.js) */
+  accountName: "paralist-account-name",
   media: "paralist-media",
   feedback: "paralist-feedback",
   navLabels: "paralist-nav-labels",

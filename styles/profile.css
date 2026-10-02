@@ -179,6 +179,34 @@
   letter-spacing: -0.02em;
 }
 
+/* Der Name ist ein Schreibfeld: ein Tipp setzt den Cursor, beim Schreiben
+   zeigt eine Linie in der Akzentfarbe (--m3-primary, styles/tokens-android.css) darunter, dass hier getippt wird */
+.profile-name[contenteditable] {
+  cursor: text;
+  outline: none;
+  min-width: 2ch;
+  max-width: 100%;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+.profile-name[contenteditable]:focus {
+  border-bottom-color: var(--m3-primary);
+  text-overflow: clip;
+}
+
+/* Leeres Feld: der Platzhalter in blasser Schrift */
+.profile-name[contenteditable]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+}
+
 .profile-mail {
   font-size: 17px;
   color: var(--muted);

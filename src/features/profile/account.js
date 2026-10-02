@@ -18,7 +18,7 @@
 
 import { copyText } from "../../core/clipboard.js";
 import { escapeHtml, icon } from "../../core/html.js";
-import { account } from "../../data/account.js";
+import { account, accountName } from "../../data/account.js";
 import { sectionMarkup } from "./profile-cards.js";
 
 /* Lang genug, um den Haken zu sehen; danach ist der Knopf wieder bereit. */
@@ -52,7 +52,7 @@ function copyGroup(title, rows) {
 /** Seite „Persönliche Daten“: Angaben und eigene Links, je mit Kopier-Knopf. */
 export function personalCard() {
   const details = copyGroup("Angaben", [
-    { icon: "person", label: "Name", value: account.name },
+    { icon: "person", label: "Name", value: accountName() },
     { icon: "globe", label: "E-Mail", value: account.mail },
     { icon: "smartphone", label: "Telefon", value: account.phone },
   ]);

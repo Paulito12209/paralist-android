@@ -1,6 +1,7 @@
 /*
  * Die Einstellungen hinter dem runden Knopf oben rechts, als ganze Seite:
- * Profilkopf, die Darstellung und die Konto-Listen. Tippt man eine Zeile an,
+ * Profilkopf (der Name darin ist ein Schreibfeld, profile-name.js), die
+ * Darstellung und die Konto-Listen. Tippt man eine Zeile an,
  * tritt an die Stelle der Liste ihre Unterseite; die Kopfleiste nennt dann
  * deren Namen. Nutzungszeit und Serie stehen nicht hier, sondern im
  * Fortschritt. Der Bereich heißt weiter „profile“, weil die Seite am
@@ -47,6 +48,7 @@ import { onAccountClick } from "./account.js";
 import { onAppSettingsClick } from "./app-settings.js";
 import { noteFeedbackInput, onFeedbackClick } from "./feedback.js";
 import { identityCard, listsMarkup } from "./profile-cards.js";
+import { initProfileName } from "./profile-name.js";
 import {
   appearanceSection,
   detailHash,
@@ -331,6 +333,7 @@ function init() {
   /* Tippen wird nur gemerkt, nicht neu gezeichnet — sonst spränge die
      Schreibmarke im Feedback-Formular bei jedem Buchstaben ans Ende. */
   dom.profileBody.addEventListener("input", noteFeedbackInput);
+  initProfileName(dom.profileBody);
 
   el("avatar-view-close").addEventListener("click", closeAvatarView);
   dom.avatarView.addEventListener("click", (event) => {
