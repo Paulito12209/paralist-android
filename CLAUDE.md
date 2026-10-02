@@ -2,9 +2,9 @@
 
 Die Android-Fassung der App „Paralist“ als Web-App — nur das Handy, keine
 Desktop- und keine iOS-Fassung. Gebaut werden soll daraus später eine
-**native Android-App**; das Web ist die schnelle Probe. Jeder Push auf `main`
-veröffentlicht die App automatisch über GitHub Pages
-(`https://paulito12209.github.io/paralist-android/`, siehe Abschnitt 7).
+**native Android-App**; das Web ist die schnelle Probe. Veröffentlicht wird
+auf dem eigenen Webspace (Hostinger) mit `python3 tools/deploy.py`, bei jedem
+Push auf `main` automatisch über den Hook (siehe Abschnitt 7).
 
 Diese Regeln gelten für jede Claude-Code-Sitzung in diesem Repository.
 Mehrere Sitzungen laufen parallel, jede an genau **einer** Idee oder einem Problem.
@@ -207,13 +207,16 @@ am Skill bekommen wie jede Änderung eine Doku-Datei.
 Kein Build-Schritt, keine Abhängigkeiten: die App lädt als ES-Module direkt im
 Browser.
 
-**Veröffentlichung:** `.github/workflows/pages.yml` läuft bei jedem Push auf
-`main`, schreibt den Versionsstempel frisch, prüft `tools/check.py` und legt
-`index.html`, `manifest.webmanifest`, `assets/`, `src/` und `styles/` auf
-GitHub Pages ab. Alles andere (tools, docs, .claude) wird nicht ausgeliefert.
-Schlägt `check.py` fehl, wird nichts veröffentlicht — die vorige Fassung
-bleibt online. Alle Pfade in `index.html` und `src/` bleiben relativ, weil die
-App unter `/paralist-android/` liegt, nicht unter `/`.
+**Veröffentlichung:** `python3 tools/deploy.py` schreibt den Versionsstempel
+frisch, prüft `tools/check.py` und lädt `index.html`, `manifest.webmanifest`,
+`.htaccess`, `assets/`, `src/` und `styles/` per FTP in das Verzeichnis auf
+dem Webspace; Altes dort wird gelöscht. Alles andere (tools, docs, .claude)
+wird nicht hochgeladen. Schlägt `check.py` fehl, wird nichts hochgeladen.
+Der Hook `.githooks/pre-push` (`git config core.hooksPath .githooks`) macht
+das bei jedem Push von `main` von selbst. Die Zugangsdaten liegen nur in
+`~/.config/paralist-android/deploy.env`, nie im Repository. Alle Pfade in
+`index.html` und `src/` bleiben relativ, weil die App in einem Unterordner
+liegt, nicht unter `/`.
 
 ### Sitzungen anlegen und Worktrees aufräumen (Notiz für mich)
 

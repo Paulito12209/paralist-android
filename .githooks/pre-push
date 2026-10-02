@@ -1,0 +1,19 @@
+#!/bin/sh
+# Beim Push von main die App auf den Webspace laden (tools/deploy.py).
+# Einmal einschalten:  git config core.hooksPath .githooks
+# Schlaegt das Hochladen fehl, wird auch nicht gepusht — so stimmen
+# Repository und Server immer ueberein. Ohne Zugangsdaten
+# (~/.config/paralist-android/deploy.env) passiert nichts.
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main)
+      if grep -qs '^HOST=.' "$HOME/.config/paralist-android/deploy.env"; then
+        echo "pre-push: main wird gepusht — lade die App auf den Webspace."
+        python3 tools/deploy.py || exit 1
+      else
+        echo "pre-push: keine Zugangsdaten in ~/.config/paralist-android/deploy.env — nichts hochgeladen."
+      fi
+      ;;
+  esac
+done
+exit 0

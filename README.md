@@ -2,25 +2,36 @@
 
 Die Android-Fassung der App **Paralist** als Web-App: nur das Handy, keine
 Desktop- und keine iOS-Fassung. Sie ist die Vorlage für die spätere
-**native Android-App** und läuft über GitHub Pages direkt auf dem Handy.
+**native Android-App** und läuft vom eigenen Webspace direkt auf dem Handy.
 Kein Build-Schritt, keine Abhängigkeiten: die App läuft als ES-Module direkt
 im Browser.
 
 ## Auf dem Handy öffnen
 
-Jeder Push auf `main` veröffentlicht die aktuelle Fassung automatisch
-(`.github/workflows/pages.yml`) unter
+Die App liegt auf dem eigenen Webspace (Hostinger) in einem eigenen
+Verzeichnis und ist über dessen Adresse erreichbar. Im Chrome auf dem
+Android-Handy öffnen und über das Menü „Zum Startbildschirm hinzufügen“ —
+dann startet sie wie eine App, ohne Browserleiste (`manifest.webmanifest`).
+Eine offene App merkt beim nächsten Öffnen, dass es eine neue Fassung gibt,
+und bietet das Aktualisieren an (`src/shell/update-prompt.js`).
 
-```
-https://paulito12209.github.io/paralist-android/
+## Veröffentlichen
+
+```bash
+python3 tools/deploy.py
 ```
 
-Im Chrome auf dem Android-Handy öffnen und über das Menü „Zum Startbildschirm
-hinzufügen“ — dann startet sie wie eine App, ohne Browserleiste
-(`manifest.webmanifest`). Eine offene App merkt beim nächsten Öffnen, dass es
-eine neue Fassung gibt, und bietet das Aktualisieren an
-(`src/shell/update-prompt.js`); der Versionsstempel dafür wird beim
-Veröffentlichen frisch geschrieben.
+Das Skript macht, was man sonst in FileZilla von Hand tut: es schreibt den
+Versionsstempel frisch, prüft die Projektregeln, löscht auf dem Server alles,
+was nicht mehr zur App gehört, und lädt alle geänderten Dateien hoch
+(`index.html`, `manifest.webmanifest`, `.htaccess`, `assets/`, `src/`,
+`styles/`). `--dry-run` zeigt nur, was passieren würde; `--all` lädt alles
+neu. Die Zugangsdaten liegen außerhalb des Repositories in
+`~/.config/paralist-android/deploy.env` (Aufbau oben in `tools/deploy.py`).
+
+Automatisch bei jedem Push auf `main`: einmal `git config core.hooksPath
+.githooks` ausführen, dann lädt `.githooks/pre-push` vor dem Push hoch.
+Schlägt das Hochladen fehl, wird auch nicht gepusht.
 
 ## Lokal starten
 
@@ -53,7 +64,9 @@ src/                        die App, in kleine Module geteilt
 tools/check.py              prüft die Projektregeln (Zeilengrenze, Struktur, Kommentare)
 tools/version.py            schreibt den Versionsstempel src/data/version.js (für das Update-Fenster)
 tools/serve.py              Entwicklungsserver ohne Zwischenspeicher
-.github/workflows/pages.yml veröffentlicht main über GitHub Pages
+tools/deploy.py             lädt die App per FTP auf den Webspace (Hostinger)
+.htaccess                   Apache-Regeln auf dem Webspace: Manifest-Typ, version.js ohne Zwischenspeicher
+.githooks/pre-push          lädt beim Push von main automatisch hoch
 docs/flows.md               die Wege, die nach einer Änderung durchzuklicken sind
 docs/android-flows.md       was die Android-Fassung dabei eigens macht
 CLAUDE.md                   Kurzregeln für die Arbeit am Projekt
@@ -179,7 +192,7 @@ Tab
 
 Die Dateien werden absichtlich nicht zusammengefasst oder komprimiert (z.B.
 mit Vite): das würde nur einen Build-Schritt hinzufügen, der nach Android
-nicht mitwandert. GitHub Pages liefert sie komprimiert aus.
+nicht mitwandert. Der Webspace liefert sie komprimiert aus (`.htaccess`).
 
 ## Flows zum Durchprüfen
 
