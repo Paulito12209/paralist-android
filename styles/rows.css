@@ -1,0 +1,342 @@
+/*
+ * Listenzeilen und alles, was an ihnen hängt: Trennlinien, Pfeil rechts,
+ * kleine Vorschau vor dem Titel und die Kopfzeile einer Unterseite.
+ * Die Wisch-Zeile mit ihren runden Knöpfen steht in styles/swipe-rows.css.
+ * Pfad: styles/rows.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --line                    -> Trennlinie zwischen den Zeilen
+ * --icon-soft               -> Pfeil rechts in der Zeile und Auf-/Zuklapp-Pfeil der Gruppen
+ * --content-side            -> Abstand der Zeilen zum Rand
+ * --page-head-top           -> Abstand über dem Zurück-Pfeil auf Unterseiten
+ * --page-head-pull          -> wie weit die Kopfzeile links und rechts über den Rand rückt (Pfeil bündig mit dem Titel)
+ * --head-btn-size           -> Tippfläche des Zurück-Pfeils (in allen Kopfzeilen gleich)
+ * --head-icon-size          -> Größe des Zurück-Pfeils (in allen Kopfzeilen gleich)
+ * --search-bar-height       -> Höhe der Kopfzeile einer Unterseite (so hoch wie die Suchleiste)
+ * --content-top             -> Luft zwischen Kopfzeile und Seitentitel
+ * --page-title-gap          -> Luft unter dem Seitentitel
+ * --page-title-lines        -> nach so vielen Zeilen endet ein langer Titel mit „…“
+ * --safe-top                -> Platz für Notch und Statusleiste über dem Zurück-Pfeil
+ * --placeholder             -> grauer Vorgabename beim Benennen eines Arbeitsbereichs
+ * --muted                   -> Anzahl neben den Gruppen-Überschriften (wie in der Pille darüber)
+ * --star-color              -> Gold des Icons vor dem Titel, wenn die Zeile ein Favorit ist
+ * --avatar-btn-bg           -> Text und Icon der Zeile „Arbeitsbereich hinzufügen“
+ *                              und die Gruppen-Überschriften unter „Verknüpfte Einträge“
+ 
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+*/
+
+.workspace-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 6px 2px;
+  border-bottom: 0.5px solid var(--line);
+  text-align: left;
+  font-size: 17px;
+  user-select: none; /* user-select: Text soll beim gedrückt Halten nicht markiert werden */
+  -webkit-touch-callout: none; /* -webkit-touch-callout: verhindert das iPhone-Menü über unserem eigenen */
+}
+
+.workspace-row .icon:not(.chevron) {
+  width: 22px;
+  height: 22px;
+  color: var(--muted);
+}
+
+.workspace-row span {
+  flex: 1;
+}
+
+/* Das Icon vor dem Titel ist zugleich der Favoriten-Schalter. Innen etwas Luft,
+   außen gleich viel zurück: so wird die Tippfläche größer, ohne dass sich der
+   Titel verschiebt. */
+.workspace-row .row-glyph {
+  flex: 0 0 auto;
+  display: flex;
+  margin: -8px;
+  padding: 8px;
+}
+
+.workspace-row .row-glyph.is-favorite .icon {
+  color: var(--star-color);
+}
+
+.workspace-row .chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--icon-soft);
+}
+
+.workspace-add {
+  color: var(--avatar-btn-bg);
+  opacity: 0.6;
+  border-bottom: 0;
+}
+
+/* Solange ein Projekt direkt in der Liste getippt wird
+   (src/features/overview/project-inline.js), ist die Zeile darunter überflüssig */
+.workspace-list.is-adding > .workspace-add {
+  display: none;
+}
+
+.workspace-row.workspace-add .icon:not(.chevron) {
+  width: var(--icon-folder-plus-width);
+  height: var(--icon-folder-plus-height);
+  color: var(--avatar-btn-bg);
+  opacity: 0.6;
+}
+
+/* Kopfzeile einer Unterseite: der Zurück-Pfeil steht ganz oben, dort wo sonst
+   Level, Suche und Profil stehen (die sind hier ausgeblendet, siehe
+   styles/top-bar.css). Sie bleibt beim Scrollen oben stehen — wie bei einer
+   Playlist in Spotify. Suche und Optionen stehen in .page-head-reveal und
+   zeigen sich erst, sobald .page-head die Klasse „is-scrolled“ bekommt. */
+.page-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  /* Gleich hoch wie die Suchleiste der Reiterseiten und mit derselben Luft
+     darunter: so steht der Seitentitel genau dort, wo auf der Übersicht
+     „Übersicht“ steht (styles/top-bar.css, --content-top in styles/base.css). */
+  box-sizing: content-box; /* box-sizing: height meint nur die Zeile, nicht den Platz für die Statusleiste */
+  height: var(--search-bar-height);
+  /* Links und rechts gleich weit über den Inhaltsrand: die Spitze des Pfeils
+     steht über dem Titel, und die Mitte zwischen Pfeil und Menü ist die
+     Bildschirmmitte — dort steht die Kategorie. */
+  margin: 0 calc(-1 * var(--page-head-pull)) var(--content-top);
+  /* oben genug Platz für Notch und Statusleiste, weil darüber nichts mehr steht */
+  padding-top: calc(var(--safe-top) + var(--page-head-top));
+  position: sticky; /* position: bleibt oben stehen, während die Liste darunter scrollt */
+  top: 0;
+  z-index: 2; /* z-index: hält die Kopfzeile über der scrollenden Liste */
+  background: var(--bg); /* deckt die durchscrollende Liste ab */
+}
+
+/* Gleiche Tippfläche und gleicher Pfeil wie in der Dateiansicht und in den
+   Einstellungen (--head-btn-size, --head-icon-size in styles/tokens.css) */
+.back-btn {
+  width: var(--head-btn-size);
+  height: var(--head-btn-size);
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  flex: 0 0 auto;
+}
+
+.back-btn .icon {
+  width: var(--head-icon-size);
+  height: var(--head-icon-size);
+}
+
+.page-head-reveal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  opacity: 0;
+  transform: translateY(-4px); /* transform: leichtes Einschweben statt hartem Erscheinen */
+  pointer-events: none; /* pointer-events: unsichtbar heißt auch nicht antippbar */
+  transition: opacity 0.15s ease, transform 0.15s ease; /* transition: sanftes Ein-/Ausblenden statt Springen */
+}
+
+/* Das Optionen-Menü erscheint zusammen mit der Suche — auf einer Sammlung
+   (is-menu-shown) steht es von Anfang an oben rechts. */
+.page-head .page-menu {
+  opacity: 0;
+  pointer-events: none; /* pointer-events: unsichtbar heißt auch nicht antippbar */
+  transition: opacity 0.15s ease; /* transition: sanftes Ein-/Ausblenden statt Springen */
+}
+
+.page-head.is-scrolled .page-head-reveal,
+.page-head.is-scrolled .page-menu,
+.page-head.is-menu-shown .page-menu,
+.page-head.is-pinned .page-menu {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Arbeitsbereich: Kategorie mittig wie auf einer Eintragsseite, ohne Suche —
+   erst der kleine Titel löst sie ab (styles/details.css). */
+.page-head.is-scrolled:not(.is-pinned) .page-crumb,
+.page-head.is-pinned .page-head-reveal,
+.page-crumb[hidden] {
+  display: none;
+}
+
+.page-search {
+  flex: 1;
+  min-width: 0;
+}
+
+.page-search-label {
+  color: var(--muted);
+  font-size: 15px;
+  overflow: hidden; /* overflow: noetig fuer text-overflow */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-title {
+  margin: 0 0 var(--page-title-gap);
+  /* Kein eigenes padding: der Einzug --title-side kommt von .screen-title
+     (styles/base.css), damit Abschnitte, Sammlungen und Ablageorte ihren
+     Titel genauso eingerückt zeigen wie die Übersicht. */
+  /* Lange Titel nach --page-title-lines Zeilen mit „…“ abschneiden */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--page-title-lines);
+  line-clamp: var(--page-title-lines);
+  overflow: hidden;
+  overflow-wrap: anywhere; /* overflow-wrap: sehr lange Wörter umbrechen statt überstehen */
+}
+
+/* Beim Umbenennen den ganzen Titel zeigen, sonst tippt man blind */
+.page-title.is-editable:focus {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: none;
+}
+
+/* Titel eines Arbeitsbereichs: direkt antippen und umbenennen, ohne Rahmen —
+   nur der Cursor zeigt, dass man gerade schreibt (wie .entry-title). */
+.page-title.is-editable {
+  outline: none;
+  cursor: text;
+  user-select: text; /* user-select: den Namen markieren können */
+  -webkit-user-select: text;
+}
+
+.workspace-name-input {
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 17px;
+  min-width: 0; /* langer Name soll in der Zeile bleiben */
+  user-select: text; /* user-select: im Eingabefeld soll man den Namen markieren können */
+}
+
+.entry-row {
+  gap: 12px;
+}
+
+.entry-row .entry-type {
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+/* Kleine Vorschau vor dem Titel: Foto, Video oder Zeichnung statt des Typ-Icons */
+.entry-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  object-fit: cover; /* object-fit: füllt das Quadrat und beschneidet statt zu verzerren */
+  flex: 0 0 auto;
+  background: #ffffff; /* Zeichnungen sind durchsichtig gespeichert und brauchen Papier dahinter */
+  box-shadow: inset 0 0 0 0.5px var(--line);
+}
+
+/* Fotos und Videos: das Feld bleibt 22px breit, damit die Titel bündig stehen;
+   das Bild darin behält seine Form (hochkant schmal, quer flach). */
+.entry-thumb-slot {
+  display: flex; /* flex statt grid: nur so bezieht sich max-height des Bildes auf die feste Feldhöhe */
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+}
+
+/* Zwei Klassen, weil sonst „.workspace-row span“ das Feld über die Zeile wachsen lässt */
+.workspace-row .entry-thumb-slot {
+  flex: 0 0 auto;
+}
+
+.entry-thumb.is-fit {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 3px;
+  background: none;
+  box-shadow: none;
+  outline: 0.5px solid var(--line); /* outline: liegt über dem Bild, sodass auch ein weißes Bild einen Rand hat */
+  outline-offset: -0.5px;
+}
+
+/* ---------- Seite eines Arbeitsbereichs oder Eintrags ---------- */
+
+/* Die beiden Pillen „Inhalt“ und „Verknüpfte Inhalte“ oben auf der Seite;
+   dieselbe Klasse trägt auch die Pillenzeile auf der Seite eines Eintrags.
+   Die seitlichen Abstände stehen bei .tab-pills (styles/overview.css). */
+.page-pills {
+  margin-bottom: 18px;
+}
+
+/* Eine Gruppe unter „Verknüpfte Inhalte“: Überschrift zum Auf-/Zuklappen, darunter die Zeilen */
+.group {
+  margin-bottom: 18px;
+}
+
+/* Überschrift, Anzahl und Pfeil stehen links beieinander; der Knopf bleibt
+   trotzdem zeilenbreit, damit man ihn überall treffen kann. */
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 2px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* Dieselbe Farbe wie „Arbeitsbereich hinzufügen“ — hebt sich leicht von der
+   grauen Anzahl daneben ab. */
+.group-label {
+  color: var(--avatar-btn-bg);
+  opacity: 0.6;
+  text-align: left;
+}
+
+.group-count {
+  font-weight: 500;
+}
+
+/* .workspace-list setzt display:flex und schlüge damit das hidden-Attribut —
+   ohne diese Regel bliebe eine zugeklappte Gruppe sichtbar. */
+.group-body[hidden] {
+  display: none;
+}
+
+/* Der Pfeil zeigt nach unten, solange die Gruppe offen ist, und nach rechts, wenn sie zu ist */
+.group-chevron {
+  width: 18px;
+  height: 18px;
+  color: var(--icon-soft);
+  transform: rotate(90deg); /* transform: dreht den Rechts-Pfeil nach unten */
+  transition: transform 0.15s ease; /* transition: der Pfeil dreht sich sichtbar statt zu springen */
+}
+
+.group.is-collapsed .group-chevron {
+  transform: rotate(0deg);
+}
+
+/* Der Vorgabename steht grau im Feld, solange nichts getippt ist */
+.workspace-name-input::placeholder {
+  color: var(--placeholder);
+}

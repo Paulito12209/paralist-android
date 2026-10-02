@@ -1,0 +1,115 @@
+/*
+ * Zeichenfläche eines Eintrags vom Typ Zeichnung und die Werkzeugleiste
+ * darunter — beide stehen auf der Seite, zwischen Titel und Karte „Details“.
+ * Pfad: styles/drawing.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --draw-tool-size          -> Größe der Werkzeug-Knöpfe
+ * --draw-color-size         -> Größe der Farbpunkte
+ * --draw-tools-gap          -> Abstand der Werkzeugleiste zur Zeichenfläche darüber und zur Karte „Details“ darunter
+ * --draw-color              -> wird je Punkt aus src/features/drawing/drawing-tools.js gesetzt
+ */
+
+/* ---------- Zeichnung ---------- */
+
+/* Zeichenfläche: weißes Papier; ihre Höhe bekommt sie vom Rahmen darum (styles/entry-details.css) */
+.draw-pad {
+  background: #ffffff; /* bleibt auch im Dunkelmodus weiß, damit die Striche lesbar bleiben */
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden; /* overflow: schneidet die Fläche ab, wenn die Tastatur den Platz verkleinert */
+  touch-action: none; /* touch-action: der Finger zeichnet, statt die Seite zu scrollen */
+}
+
+.draw-pad[hidden] {
+  display: none;
+}
+
+.draw-pad canvas {
+  display: block;
+}
+
+/* Werkzeugleiste wie Apples Stiftpalette, mittig unter der Zeichenfläche;
+   nur auf einer Zeichnung zu sehen. Die Fläche ist genau so hoch, dass
+   darunter Leiste und Kopf der Karte „Details“ über der Navigation Platz
+   haben (src/features/entry/entry-fold.js). Die Seite scrollt nur, um die
+   Karte ganz zu zeigen — auf der Fläche selbst zeichnet der Finger. */
+.draw-tools {
+  display: none;
+  align-items: center;
+  /* justify-content: die Leiste ist so breit wie die Zeichenfläche (16px zum
+     Rand wie aller Inhalt), die Knöpfe verteilen sich über die ganze Breite */
+  justify-content: space-between;
+  gap: 4px;
+  margin: var(--draw-tools-gap) 0 0;
+  padding: 6px 8px;
+  border-radius: 999px; /* border-radius: Pillenform wie die Navigation */
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+body.is-drawing .draw-tools:not([hidden]) {
+  display: flex;
+}
+
+.draw-tool {
+  width: var(--draw-tool-size);
+  height: var(--draw-tool-size);
+  border-radius: 50%; /* border-radius: macht die Werkzeug-Knöpfe rund */
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.draw-tool .icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Das gewählte Werkzeug bleibt hervorgehoben */
+.draw-tool.is-active {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.draw-tool:active,
+.draw-color:active {
+  opacity: 0.55;
+}
+
+.draw-split {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--line);
+  flex: 0 0 auto;
+}
+
+.draw-colors {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.draw-color {
+  width: var(--draw-color-size);
+  height: var(--draw-color-size);
+  border-radius: 50%; /* border-radius: Farbpunkt */
+  background: var(--draw-color);
+  box-shadow: 0 0 0 1px var(--line); /* dünner Rand, damit Schwarz auch auf dunkler Leiste zu sehen ist */
+  flex: 0 0 auto;
+}
+
+/* Ring um die gewählte Farbe */
+.draw-color.is-active {
+  box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--draw-color);
+}
+
+/* Unter der Werkzeugleiste folgt die Karte „Details“ mit demselben Abstand
+   wie zwischen Fläche und Leiste — nicht mit dem größeren Abstand, den sie
+   unter einem Text hat (--details-gap in styles/entry-details.css). */
+.draw-tools + .details-card {
+  margin-top: var(--draw-tools-gap);
+}

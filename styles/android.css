@@ -1,0 +1,296 @@
+/*
+ * Android-Fassung, Kopf und Fuß: Suchleiste oben und Navigationsleiste unten
+ * nach Material 3, wie in Google Mail. Der Plus-Knopf steht nicht mehr in der
+ * Leiste, sondern rechts darüber (styles/android-fab.css). Beim Scrollen nach
+ * unten gleitet die Suchleiste nach oben und die Leiste nach unten weg, beim
+ * Scrollen nach oben kommen beide wieder — die Klasse „is-bars-hidden“ an
+ * .device setzt src/shell/android-bars.js.
+ * Auch hier: Listeneinträge haben keine Trennlinie am unteren Rand. Titel und
+ * Abschnittsüberschriften verlieren den Einzug (--title-side → 0) und
+ * stehen stattdessen --m3-title-edge vom Rand; der erste Reiter, die Icons der Listen und „Archiv“ stehen auf --m3-tab-edge.
+ * Alles hier gilt nur mit data-mobile-os="android" an <html> (Einstellungen ›
+ * Mehr › Versionen) und unterhalb von 1024px.
+ * Pfad: styles/android.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens-android.css)
+ * -----------------------------------
+ * --m3-surface-container-high -> Fläche der Suchleiste
+ * --m3-search-height          -> Höhe der Suchleiste
+ * --m3-top-bar-pad            -> Luft über und unter der Suchleiste
+ * --m3-surface-container      -> Fläche der Leiste unten
+ * --m3-nav-height(-labels)    -> Höhe der Leiste ohne bzw. mit Namen
+ * --m3-indicator-w / -h       -> Pille hinter dem aktiven Icon
+ * --m3-secondary-container    -> Farbe dieser Pille
+ * --m3-hide-time              -> Dauer des Weg- und Wiederkommens
+ * --m3-title-edge             -> Abstand von Titeln und Überschriften zum Geräterand
+ * --m3-content-end            -> Platz am Seitenende
+ * --details-head-h            -> so viel schaut die Karte „Details“ hervor; der Plus-Knopf
+ *                                steht um so viel höher (styles/tokens-pages.css)
+ * --m3-fab-lift               -> wie weit der Plus-Knopf gerade gehoben ist (gesetzt hier
+ *                                für Arbeitsbereiche, nicht in den Tokens; auf der Eintragsseite nie gehoben)
+ * --m3-fab-size / --m3-fab-gap / --m3-nav-shift
+ *                             -> Eintragsseite: der Inhalt endet ganz gescrollt einen
+ *                                --m3-fab-gap über dem Plus-Knopf (Leiste, Knopf, zwei Abstände)
+ * --m3-menu-radius / --m3-menu-pad
+ *                             -> kleines Menü beim gedrückt Halten: Rundung der Karte und
+ *                                Luft über der ersten bzw. unter der letzten Zeile
+ * --m3-fab-gap                -> dasselbe Menü steht unten rechts mit diesem Abstand zum Rand
+ *                                und zur Leiste, genau wie der Plus-Knopf
+ * --ctx-nav-top               -> Höhe der Leiste über dem Gerätefuß; setzt src/ui/ctx-menu.js
+ *                                beim Öffnen, nicht anpassen
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel: Suchtext 16px,
+ * Namen unter den Icons 12px (Material 3 „Label medium“).
+ */
+
+@media (max-width: 1023px) {
+  /* ---------- Eine Linie links ---------- */
+
+  /* Der Einzug der großen Titel (--title-side, 4px aus styles/tokens.css)
+     rückt Titel und Abschnittsüberschrift ein Stück vor die Liste. Material 3
+     kennt nur den Seitenrand von 16px — Titel, Überschrift, Reiter, Symbole und
+     Listen stehen darauf. Am body, nicht an :root: tokens.css setzt den Wert
+     an :root, und ein Wert am body gewinnt unabhängig von der Reihenfolge. */
+  [data-mobile-os="android"] body {
+    --title-side: 0px;
+  }
+
+  /* Titel, Abschnittsüberschriften („Übersicht“, „Projekte“), der graue Satz
+     darunter (.page-intro) und der Titel einer Eintragsseite stehen so weit vom
+     Rand (--m3-title-edge); Reiter, Listenzeilen und „Archiv“ stehen etwas
+     näher am Rand (--m3-tab-edge), Kacheln auf dem Seitenrand. */
+  [data-mobile-os="android"] :is(.screen-title, .section-head, .page-intro, .entry-title) {
+    padding-left: calc(var(--m3-title-edge) - var(--content-side));
+  }
+
+  /* ---------- Kopfzeile mit Suchleiste ---------- */
+
+  /* position: die Kopfzeile liegt über dem Inhalt statt darüber im Fluss — nur
+     so kann sie nach oben wegrutschen, ohne dass die Liste mitspringt. Der
+     Verlauf am unteren Rand entfällt: Material 3 setzt die Leiste klar ab. */
+  [data-mobile-os="android"] .top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    mask-image: none;
+    margin-bottom: 0;
+    padding: calc(var(--safe-top) + var(--m3-top-bar-pad)) 16px var(--m3-top-bar-pad);
+    transition: transform var(--m3-hide-time) ease; /* transition: gleitet weg statt zu springen */
+  }
+
+  /* transform: schiebt die Kopfzeile um ihre ganze Höhe nach oben aus dem Bild */
+  [data-mobile-os="android"] .device.is-bars-hidden .top-bar {
+    transform: translateY(-100%);
+  }
+
+  /* Die Liste beginnt unter der Kopfzeile, die jetzt über ihr liegt */
+  [data-mobile-os="android"] body:not(.is-subpage) .content {
+    padding-top: calc(var(--safe-top) + var(--m3-top-bar-height) + var(--content-top));
+  }
+
+  [data-mobile-os="android"] .content {
+    padding-bottom: var(--m3-content-end);
+  }
+
+  /* Suchleiste wie in Google Mail: hohe Pille, Platzhalter mittig, ohne Lupe */
+  [data-mobile-os="android"] .top-bar .search {
+    height: var(--m3-search-height);
+    border-radius: calc(var(--m3-search-height) / 2); /* border-radius: halbe Höhe ergibt die Pille */
+    background: var(--m3-surface-container-high);
+    padding: 0 20px;
+  }
+
+  [data-mobile-os="android"] .top-bar .search-icon {
+    display: none;
+  }
+
+  [data-mobile-os="android"] .top-bar .search input {
+    text-align: center;
+    font-size: 16px;
+  }
+
+  /* Beim Tippen steht der Text links, wie in jedem Feld von Material 3 */
+  [data-mobile-os="android"] .top-bar .search input:focus,
+  [data-mobile-os="android"] .top-bar .search input:not(:placeholder-shown) {
+    text-align: left;
+  }
+
+  [data-mobile-os="android"] .top-bar .search input::placeholder {
+    color: var(--m3-on-surface-variant);
+    opacity: 1;
+  }
+
+  /* ---------- Navigationsleiste ---------- */
+
+  /* Wie weit die Leiste beim Wegscrollen nach unten muss: ihre eigene Höhe */
+  [data-mobile-os="android"] .device {
+    --m3-nav-shift: var(--m3-nav-height);
+  }
+
+  [data-mobile-os="android"] .device:has(.tab-bar.show-labels) {
+    --m3-nav-shift: var(--m3-nav-height-labels);
+  }
+
+  /* Die Leiste reicht von Rand zu Rand und sitzt ganz unten, ohne Luft drumherum */
+  [data-mobile-os="android"] .bottom-bar,
+  [data-mobile-os="android"] .bottom-bar:has(.nav-shell.is-composing) {
+    padding: 0;
+    transition: transform var(--m3-hide-time) ease; /* transition: gleitet weg statt zu springen */
+  }
+
+  /* transform: nur die Leiste verschwindet, der Plus-Knopf darüber rückt an den unteren Rand */
+  [data-mobile-os="android"] .device.is-bars-hidden .bottom-bar {
+    transform: translateY(calc(var(--m3-nav-shift) + var(--safe-bottom)));
+  }
+
+  [data-mobile-os="android"] .nav-shell {
+    border-radius: 0;
+    padding: 0 0 var(--safe-bottom);
+    background: var(--m3-surface-container);
+  }
+
+  /* Das Eingabefeld wächst wie ein Blatt von unten: oben rund, unten am Rand */
+  [data-mobile-os="android"] .nav-shell.is-composing {
+    border-radius: var(--composer-radius) var(--composer-radius) 0 0;
+    padding: 12px 12px calc(12px + var(--safe-bottom));
+  }
+
+  [data-mobile-os="android"] .tab-bar {
+    min-height: var(--m3-nav-height);
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+
+  [data-mobile-os="android"] .tab-bar.show-labels {
+    min-height: var(--m3-nav-height-labels);
+  }
+
+  /* Der Plus-Knopf wohnt jetzt rechts über der Leiste */
+  [data-mobile-os="android"] .tab-add {
+    display: none;
+  }
+
+  /* Vier gleich breite Ziele, jedes über seine ganze Breite antippbar */
+  [data-mobile-os="android"] .tab-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    color: var(--m3-on-surface-variant);
+  }
+
+  [data-mobile-os="android"] .tab-btn:not(.is-active) {
+    opacity: 1;
+  }
+
+  [data-mobile-os="android"] .tab-btn.is-active {
+    color: var(--m3-on-surface);
+  }
+
+  [data-mobile-os="android"] .tab-btn::after {
+    inset: 0;
+  }
+
+  /* Der runde Kreis der ersten Fassung entfällt: Material 3 hinterlegt nur das Icon */
+  [data-mobile-os="android"] .tab-circle,
+  [data-mobile-os="android"] .tab-btn.is-active .tab-circle,
+  [data-mobile-os="android"] .tab-bar.show-labels .tab-circle {
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    gap: 4px;
+    padding-bottom: 0;
+  }
+
+  /* Die Pille hinter dem Icon entsteht aus Innenabstand am Icon selbst:
+     box-sizing content-box, damit das Icon 24px bleibt und die Pille drumherum wächst */
+  [data-mobile-os="android"] .tab-btn .icon,
+  [data-mobile-os="android"] .tab-bar.show-labels .tab-btn .icon {
+    box-sizing: content-box;
+    width: 24px;
+    height: 24px;
+    padding: calc((var(--m3-indicator-h) - 24px) / 2) calc((var(--m3-indicator-w) - 24px) / 2);
+    border-radius: 999px; /* border-radius: aus dem Kästchen wird die Pille */
+    transition: background-color 200ms ease; /* transition: die Pille blendet weich ein */
+  }
+
+  [data-mobile-os="android"] .tab-btn.is-active .icon {
+    background: var(--m3-secondary-container);
+    color: var(--m3-on-secondary-container);
+  }
+
+  [data-mobile-os="android"] .tab-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  [data-mobile-os="android"] .tab-btn.is-active .tab-label {
+    font-weight: 700;
+  }
+
+  /* ---------- Plus-Knopf über einer Karte „Details“ ---------- */
+
+  /* Wo auf einem Arbeitsbereich die Karte „Details“ (styles/entry-details.css)
+     hervorschaut, steht der Plus-Knopf über ihrem Kopf statt darauf. Auf der
+     Eintragsseite gibt es die Karte nicht, dort öffnet der Info-Knopf ein
+     Blatt (styles/android-entry.css). Die Karte
+     „Ansicht“ ist hier ein Blatt von unten und schaut nicht hervor
+     (styles/android-sheet.css). */
+  [data-mobile-os="android"] body:has(.view.is-active:not(#view-entry) .details-card) {
+    --m3-fab-lift: var(--details-head-h);
+  }
+
+  [data-mobile-os="android"] body:has(.view.is-active:not(#view-entry) .details-card) .m3-fab {
+    bottom: calc(100% + var(--m3-fab-lift) + var(--m3-fab-gap));
+  }
+
+  /* Eintragsseite: ganz gescrollt endet der Inhalt (Text oder „Mehr anzeigen“)
+     so weit über dem Plus-Knopf, wie der Knopf über der Leiste steht. Am
+     Seitenende kommt die Leiste dafür zurück (src/shell/android-bars.js). Die
+     übrigen Seiten behalten --m3-content-end. */
+  [data-mobile-os="android"] body:has(#view-entry.is-active) .content {
+    padding-bottom: calc(var(--m3-nav-shift) + var(--safe-bottom) + var(--m3-fab-size) + 2 * var(--m3-fab-gap));
+  }
+
+  /* Die Medien-Knöpfe rücken nach links, rechts steht der Plus-Knopf */
+  [data-mobile-os="android"] .media-actions {
+    justify-content: flex-start;
+    padding-left: var(--m3-fab-gap);
+    margin-bottom: var(--m3-fab-gap);
+  }
+
+  /* Listeneinträge ohne Trennlinie am unteren Rand: Material 3 trennt Zeilen
+     durch Abstand, nicht durch Haarlinien. Auf dem Pixel (hohe Pixeldichte)
+     sind die 0.5px-Linien sichtbar, im Browser am Rechner nicht. Gilt für
+     Zeilen (Einträge, Projekte, Aufgaben), Board-Einträge und Lesezeichen. */
+  [data-mobile-os="android"] :is(.workspace-row, .board-row, .bookmark-row) {
+    border-bottom: 0;
+  }
+
+  /* ---------- Menü beim gedrückt Halten ---------- */
+
+  /* Wie das Menü in Google Drive: kaum gerundet, ohne Schatten (der helle
+     Schein im Dunkelmodus aus styles/overlays.css entfällt) und mit Zeilen,
+     die bis an den Rand der Karte reichen. Die Auswahl über :root und
+     .ctx-backdrop ist so genau, dass sie die Dunkel-Regeln dort übertrifft. */
+  :root[data-mobile-os="android"] .ctx-backdrop .ctx-card {
+    /* Unten rechts über der Leiste, im Abstand des Plus-Knopfs; höher als der
+       Platz es erlaubt wird die Karte scrollbar statt aus dem Bild zu ragen */
+    top: auto;
+    left: auto;
+    right: var(--m3-fab-gap);
+    bottom: calc(var(--ctx-nav-top, 0px) + var(--m3-fab-gap));
+    max-height: calc(100% - var(--ctx-nav-top, 0px) - var(--m3-fab-gap) - var(--safe-top) - 16px);
+    overflow-y: auto; /* overflow: nur auf sehr niedrigen Geräten nötig */
+    padding: var(--m3-menu-pad) 0;
+    border-radius: var(--m3-menu-radius); /* border-radius: Ecken wie bei Material 3 „Menu“ */
+    box-shadow: none; /* box-shadow: kein Schein um die Karte */
+  }
+
+  [data-mobile-os="android"] .ctx-item {
+    padding-inline: 16px;
+    border-radius: 0; /* border-radius: das Drücken färbt die ganze Zeile bis zum Rand */
+  }
+}

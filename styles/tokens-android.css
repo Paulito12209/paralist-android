@@ -1,0 +1,301 @@
+/*
+ * Die Werte der Android-Fassung (Einstellungen › Mehr › Versionen › Android).
+ * Sie gelten nur, solange an <html> data-mobile-os="android" steht, und nur
+ * unterhalb von 1024px — die Regeln dazu stehen in styles/android.css,
+ * styles/android-tabs.css und styles/android-fab.css. Farben und Maße folgen
+ * Material 3 in der Lesart von Google Mail und Google Kalender: neutrale
+ * Flächen, blaue Akzente im Hellen, graublaue im Dunkeln.
+ * Pfad: styles/tokens-android.css
+ *
+ * ANPASSBARE WERTE IN DIESER DATEI
+ * -----------------------------------
+ * FARBEN (je hell und dunkel)
+ * --m3-surface-container       -> Fläche der Navigationsleiste unten
+ * --m3-surface-container-high  -> Fläche der Suchleiste oben
+ * --m3-secondary-container     -> Pille hinter dem Icon des aktiven Reiters
+ * --m3-on-secondary-container  -> Icon in dieser Pille
+ * --m3-primary-container       -> Fläche des Plus-Knopfs und der Einträge im Plus-Menü
+ * --m3-on-primary-container    -> Schrift und Icon darauf
+ * --m3-primary                 -> Akzent: Linie und Schrift des aktiven Reiters, Schließen-Knopf im Menü
+ * --m3-on-primary              -> das ✕ auf dem Schließen-Knopf
+ * --m3-on-surface              -> Schrift des aktiven Reiters unten
+ * --m3-on-surface-variant      -> Icons und Schrift der übrigen Reiter, Platzhalter der Suche
+ * --m3-on-surface-muted        -> dritte, leiseste Stufe: „Archiv (n)“, Sortieren, Filtern und
+ *                                 „… hinzufügen“ über und unter den Listen (Android und Experiment);
+ *                                 im Dunkeln deutlich dunkler als die Zeilentitel, damit die Werkzeuge
+ *                                 hinter den Inhalt zurücktreten
+ * --m3-outline-variant         -> Trennlinie unter den Reitern
+ * --m3-seg-fill                -> Grund der Reiter-Kapsel (nur Android (Experiment))
+ * --m3-seg-thumb               -> das gewählte Segment darauf
+ * --m3-seg-separator           -> Trennlinie zwischen zwei nicht gewählten Segmenten
+ * --m3-scrim                   -> Schleier über der App, solange das Plus-Menü offen ist
+ *                                 (dunkel im Dunkelmodus, weißlich im Hellmodus)
+ * MASSE
+ * --m3-nav-height              -> Höhe der Leiste unten ohne Namen (Material 3 Expressive: 64dp)
+ * --m3-nav-height-labels       -> Höhe mit Namen unter den Icons (Material 3: 80dp)
+ * --m3-indicator-w / -h        -> Breite und Höhe der Pille hinter dem aktiven Icon
+ * --m3-search-height           -> Höhe der Suchleiste oben (Material 3: 56dp)
+ * --m3-top-bar-pad             -> Luft über und unter der Suchleiste
+ * --m3-top-bar-height          -> ganze Höhe der Kopfzeile (aus den beiden Werten darüber)
+ * --m3-fab-size / --m3-fab-radius -> Höhe und Rundung des Plus-Knopfs (Material 3: 56dp, 16dp)
+ * --m3-fab-gap                 -> Abstand des Plus-Knopfs zum rechten Rand und zur Leiste
+ * --m3-menu-item-height        -> Höhe eines Eintrags im Plus-Menü
+ * --m3-menu-gap                -> Luft zwischen den Einträgen im Plus-Menü
+ * --m3-tab-height              -> Höhe eines Reiters (Material 3: 48dp)
+ * --m3-title-edge              -> Abstand vom Geräterand bis zu den großen Titeln, Abschnittsüberschriften („Projekte“),
+ *                                 dem grauen Satz darunter und dem Titel einer Eintragsseite
+ * --m3-tab-edge                -> Abstand vom Geräterand bis zum Inhalt des ersten Reiters; ebenso weit stehen die
+ *                                 Icons der Listenzeilen, von „Projekt hinzufügen“ und von „Archiv“
+ * --m3-tab-info-w              -> Platz, den das ⓘ hinter „Alle“ (Aufgaben) neben dem Namen einnimmt; die Linie
+ *                                 unter dem Reiter endet um so viel früher und liegt nur unter dem Namen
+ * --m3-tab-indicator           -> Dicke der Linie unter dem aktiven Reiter (Material 3: 3dp)
+ * --m3-tabs-gap                -> Luft zwischen einer Reiterzeile und der Liste darunter
+ * --m3-cal-weekday-tighten     -> um so viel stehen im Kalender die Kreise näher an den Wochentagen
+ *                                 (MO, DI …) als in den übrigen Fassungen; 3px ergibt 4px statt 7px Abstand
+ * --m3-cal-day-inset           -> Kalender („Android“): wie weit der gefüllte Kreis des gewählten Tages vom
+ *                                 Rand des Tages wegbleibt (2px: 40px-Kreis wie im Material-3-Datumswähler)
+ * --m3-cal-ring-gap            -> Luft zwischen Ring und gefülltem Kreis, wenn der Tag Einträge hat
+ * --m3-cal-title-gap           -> Kalender: Luft zwischen Titel „Kalender“ und Datumszeile; zugleich die Luft
+ *                                 über der Datumszeile, wenn der Kopf oben eingerastet ist
+ * --m3-hide-time               -> wie schnell Kopfzeile und Leiste beim Scrollen weg- und wiederkommen
+ * --m3-content-end             -> Platz am Seitenende, damit nichts hinter Plus-Knopf und Leiste liegt
+ * --m3-sheet-radius            -> Rundung oben an allen Blättern von unten (Material 3 „Large“: 16dp;
+ *                                 28dp wäre „Extra large“ und wirkt zu rund)
+ * --m3-sheet-scrim-alpha       -> Deckkraft des schwarzen Schleiers hinter einem Blatt von unten
+ *                                 (Material 3: 0.32 — 0 = kein Schleier, 1 = ganz schwarz)
+ * --m3-sheet-max               -> wie hoch dieses Blatt höchstens wird (Anteil des Geräts)
+ * --m3-sheet-width            -> wie breit das Blatt auf einem Tablet höchstens wird (Material 3: 640dp)
+ * --m3-sheet-row-h            -> Höhe einer Zeile im Blatt (Material 3 Liste, eine Zeile: 56dp)
+ * --m3-seg-thumb-shadow       -> Schatten unter dem gewählten Segment (nur Android (Experiment))
+ * --m3-seg-height             -> Höhe eines Segments der Reiter-Kapsel
+ * --m3-seg-pad                -> Rand zwischen Kapsel und Segmenten
+ * --m3-seg-air                -> Luft über und unter der Kapsel, damit die Zeile so hoch bleibt wie --m3-tab-height
+ *                                 (errechnet; nur bei Medien und den Reitern direkt auf einer Seite nötig)
+ * --m3-ov-gap-title            -> Übersicht (Android und Experiment): sichtbarer Abstand Suchleiste bis Überschrift
+ * --m3-ov-gap-cards            -> ebenso Überschrift bis zu den Kacheln
+ * --m3-ov-gap-section          -> ebenso untere Ränder der Kacheln bis „Projekte“
+ * --m3-ov-gap-tabs             -> ebenso „Projekte“ bis zur Reiter-Kapsel
+ * --m3-tab-tools-air          -> zusätzliche Luft zwischen den Reitern und dem Symbol
+ *                                 „Ansicht“ rechts, dort wo sonst die Trennlinie stand
+ * --m3-snap-edge               -> Abstand des Plus-Symbols („Neue Ansicht“) zum rechten Rand der Reiterzeile,
+ *                                 solange es dort einrastet
+ * --m3-snap-bleed              -> um so viel ragt das festgehaltene Plus über den Rand hinaus (1px gegen Teilpixel-Reste)
+ * --m3-snap-reach              -> Platz rechts, den ein ins Bild gerollter Reiter frei lässt: Plus (16 + Symbol 16
+ *                                 + Rand) samt Verlauf; ändert man Rand oder Symbol, hier mitziehen
+ * --m3-seg-snap-reach          -> dasselbe für die Kapsel in Android (Experiment): 12 + Symbol 14 + Rand + Verlauf
+ * --m3-head-tools-pull         -> um so viel rückt das Symbol „Verknüpfen“ in der Kopfzeile näher
+ *                                 an das Drei-Punkte-Menü (nur Android (Experiment))
+ * --m3-list-row-h              -> Mindesthöhe einer Listenzeile (Material 3: Liste, eine Zeile, 56dp — Google Tasks wirkt dichter)
+ * --m3-list-gap                -> Abstand zwischen Bild/Icon-Fläche und Titel
+ * --m3-list-leading            -> Größe des Bilds und der Icon-Fläche vor dem Titel; das Icon steht links in der
+ *                                 Fläche, also auf dem Seitenrand von 16px (der Titel folgt nach Fläche + Abstand)
+ * --m3-list-icon               -> Größe des Icons darin (so klein wie das Kästchen in Google Tasks: 20dp)
+ * --m3-list-thumb-radius       -> Rundung der Vorschaubilder vor dem Titel
+ * --m3-swipe-action-w / -h     -> Breite und Höhe der Wisch-Knöpfe (hochkant, voll gerundet; höchstens so hoch wie eine Zeile)
+ * --m3-swipe-action-gap        -> Abstand der Wisch-Knöpfe zueinander und zum Rand
+ * --m3-row-more-size           -> Tippfläche der drei Punkte rechts in der Zeile (Material 3: 48dp)
+ * --m3-reorder-radius          -> Rundung der gezogenen Zeile und der Lücke, wo sie herkam (styles/android-reorder.css)
+ * --m3-reorder-shadow          -> Schatten der gezogenen Zeile
+ * --m3-reorder-slot-inset      -> Luft der Lücke zu Zeilen darüber und darunter
+ * --m3-reorder-edge            -> Abstand der gezogenen Zeile zum linken und rechten Geräterand (src/ui/row-lift.js)
+ * --m3-error / --m3-on-error   -> Wisch-Knopf „Löschen“ (Material 3: gefüllt in der Fehlerfarbe)
+ * --m3-card-head-h             -> Höhe der Werkzeugzeile über den Projekten (Archiv, Sortieren, Filtern)
+ * --m3-card-head-pull          -> um so viel rückt die erste Zeile näher an die Werkzeugzeile heran
+ * --m3-card-head-plain-gap     -> Luft zwischen Titel und Werkzeugzeile, wo keine Reiter darüber stehen (Sammlungen)
+ * --m3-card-tool-size          -> Tippfläche eines Symbols in der Werkzeugzeile (Material 3: 48dp)
+ * --m3-card-tool-icon          -> Größe des Symbols darin (Material 3: 24dp)
+ * --m3-text-btn-h              -> Höhe des Text-Knopfs „Archiv (n)“ (Material 3 „Text button“: 40dp)
+ * --m3-text-btn-pad            -> Innenabstand links und rechts darin (Material 3: 12dp)
+ * --m3-state-pressed           -> wie stark eine Zeile beim Drücken getönt wird (Material 3 „state layer“: 12%)
+ * --m3-menu-sheet-pad          -> Luft über der ersten und unter der letzten Zeile in einem Auswahl-Blatt
+ * --m3-menu-radius             -> Rundung des kleinen Menüs beim gedrückt Halten (Material 3 „Menu“: 4dp, wie in Google Drive)
+ * --m3-menu-pad                -> Luft über der ersten und unter der letzten Zeile in diesem Menü (Material 3: 8dp)
+ * --m3-chip-h / --m3-chip-radius -> Höhe und Rundung der Auswahl-Chips „Aufgabe ▾“ und „Eingang ▾“ im
+ *                                 Blatt „Neu“ (Material 3 „Filter chip“: 32dp, 8dp — eckig gerundet, keine Pille)
+ * --m3-filter-gap             -> Abstand zwischen den Chips im Blatt „Filtern“ (Material 3: 8dp)
+ * --m3-filter-section-gap      -> Luft zwischen zwei Abschnitten in diesem Blatt (16dp)
+ * --m3-composer-attach         -> Größe des runden Anhang-Knopfs (+) links unten in diesem Blatt (40dp)
+ * --m3-composer-pad            -> Innenabstand des Blatts „Neu“ links, rechts und oben (Google Tasks: 24dp)
+ * --m3-page-bar-h              -> Höhe der Kopfleiste auf den Seiten Einstellungen und Fortschritt (Material 3 „Small top app bar“: 64dp)
+ * --m3-page-bar-pad            -> Abstand von Pfeil und Titel dieser Leiste zum Geräterand (Material 3: 4dp)
+ * --m3-page-bar-title          -> Schriftgröße des Titels in der Leiste (Material 3 „Title large“: 22sp)
+ * --m3-page-edge               -> Abstand von Karten und Zeilen auf diesen Seiten zum Geräterand (Material 3: 16dp)
+ * --m3-page-row-h              -> Mindesthöhe einer Listenzeile auf diesen Seiten (Material 3 Liste, eine Zeile: 56dp)
+ * --m3-page-icon               -> Größe der Icons vor den Zeilen dieser Seiten (Material 3: 24dp)
+ * --m3-page-card-radius        -> Rundung der Karten und Kacheln auf diesen Seiten (Material 3 „Large“: 16dp)
+ * --m3-page-gap                -> Luft zwischen zwei Karten auf diesen Seiten (Material 3: 8dp)
+ * --m3-page-section-gap        -> Luft über einer Abschnittsüberschrift („Darstellung“, „Analyse“)
+ * --m3-page-tile-gap           -> Fuge zwischen zwei Kachel-Zeilen der Einstellungen (styles/android-settings-tiles.css)
+ * --m3-group-radius            -> Rundung außen an den Gruppen der Einstellungsliste und an der Profilkarte (Google-Einstellungen: 20dp)
+ * --m3-group-inner-radius      -> Rundung zwischen zwei Zeilen einer Gruppe (4dp)
+ * --m3-group-gap               -> Fuge zwischen den Zeilen einer Gruppe (2dp)
+ * --m3-group-space             -> Luft zwischen zwei Gruppen der Einstellungsliste (16dp)
+ * --m3-page-seg-h              -> Höhe des Zeitraum-Schalters „7 Tage | 30 Tage | 90 Tage“ (Material 3 „Segmented button“: 40dp)
+ * --m3-settings-title          -> Schriftgröße der großen Überschrift auf der Einstellungsseite im Experiment (Google-Einstellungen: ca. 36sp)
+ * --m3-settings-group-radius    -> Rundung der Außenecken einer Zeilengruppe im Experiment (Google-Einstellungen: 28dp)
+ * --m3-settings-inner-radius    -> Rundung der Ecken zwischen zwei Zeilen einer Gruppe im Experiment (4dp)
+ * --m3-settings-back-size       -> Durchmesser des runden Zurück-Knopfes im Experiment (48dp)
+ * --m3-page-in-time            -> Dauer, mit der eine Seite hereingleitet (Material 3: 300ms)
+ * --m3-page-in-shift           -> wie weit sie dabei von rechts kommt (Material 3 „Shared axis“: 30dp)
+ */
+
+:root[data-mobile-os="android"] {
+  --m3-surface-container: #eef2f9;
+  --m3-surface-container-high: #e5eaf2;
+  --m3-secondary-container: #c2e7ff;
+  --m3-on-secondary-container: #001d35;
+  --m3-primary-container: #d3e3fd;
+  --m3-on-primary-container: #041e49;
+  --m3-primary: #0b57d0;
+  --m3-on-primary: #ffffff;
+  --m3-on-surface: #1f1f1f;
+  --m3-on-surface-variant: #444746;
+  --m3-on-surface-muted: #6b6f73;
+  --m3-outline-variant: #c4c7c5;
+  --m3-scrim: rgba(255, 255, 255, 0.86);
+  --m3-seg-fill: rgba(118, 118, 128, 0.12);
+  --m3-seg-thumb: #ffffff;
+  --m3-seg-separator: rgba(60, 60, 67, 0.29);
+
+  --m3-nav-height: 64px;
+  --m3-nav-height-labels: 80px;
+  --m3-indicator-w: 56px;
+  --m3-indicator-h: 32px;
+  --m3-search-height: 56px;
+  --m3-top-bar-pad: 8px;
+  --m3-top-bar-height: calc(var(--m3-search-height) + 2 * var(--m3-top-bar-pad));
+  --m3-fab-size: 56px;
+  --m3-fab-radius: 16px;
+  --m3-fab-gap: 16px;
+  --m3-menu-item-height: 56px;
+  --m3-menu-gap: 8px;
+  --m3-tab-height: 48px;
+  --m3-tab-indicator: 3px;
+  --m3-title-edge: 24px;
+  --m3-tab-edge: 20px;
+  --m3-tab-info-w: 18px;
+  --m3-tabs-gap: 12px;
+  --m3-cal-weekday-tighten: 3px;
+  --m3-cal-day-inset: 2px;
+  --m3-cal-ring-gap: 2px;
+  --m3-cal-title-gap: 18px;
+  --m3-hide-time: 220ms;
+  --m3-content-end: calc(var(--m3-nav-height-labels) + var(--m3-fab-size) + 3 * var(--m3-fab-gap));
+  --m3-sheet-radius: 16px;
+  --m3-sheet-scrim-alpha: 0.32;
+  --m3-sheet-max: 80%;
+  --m3-sheet-width: 640px;
+  --m3-sheet-row-h: 56px;
+  --m3-menu-radius: 4px;
+  --m3-menu-pad: 8px;
+  --m3-seg-thumb-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04);
+  --m3-seg-height: 30px;
+  --m3-seg-pad: 2px;
+  --m3-seg-air: calc((var(--m3-tab-height) - var(--m3-seg-height) - 2 * var(--m3-seg-pad)) / 2);
+  --m3-ov-gap-title: 40px;
+  --m3-ov-gap-cards: 24px;
+  --m3-ov-gap-section: 40px;
+  --m3-ov-gap-tabs: 20px;
+  --m3-tab-tools-air: 4px;
+  --m3-snap-edge: 16px;
+  --m3-snap-bleed: 1px;
+  --m3-snap-reach: calc(16px + 16px + var(--m3-snap-edge) + var(--tab-pills-fade));
+  --m3-seg-snap-reach: calc(12px + 14px + var(--m3-snap-edge) + var(--tab-pills-fade));
+  --m3-head-tools-pull: 8px;
+  --m3-list-row-h: 52px;
+  --m3-list-gap: 12px;
+  --m3-list-leading: 28px;
+  --m3-list-icon: 20px;
+  --m3-list-thumb-radius: 8px;
+  --m3-swipe-action-w: 48px;
+  --m3-swipe-action-h: 48px;
+  --m3-swipe-action-gap: 8px;
+  --m3-row-more-size: 48px;
+  --m3-reorder-radius: 16px;
+  --m3-reorder-shadow: 0 6px 16px rgba(0, 0, 0, 0.22), 0 2px 4px rgba(0, 0, 0, 0.14);
+  --m3-reorder-slot-inset: 4px;
+  --m3-reorder-edge: 8px;
+  --m3-card-head-h: 48px;
+  --m3-card-head-pull: 4px;
+  --m3-card-head-plain-gap: 4px;
+  --m3-card-tool-size: 48px;
+  --m3-card-tool-icon: 24px;
+  --m3-text-btn-h: 40px;
+  --m3-text-btn-pad: 12px;
+  --m3-state-pressed: 12%;
+  --m3-menu-sheet-pad: 8px;
+  --m3-chip-h: 32px;
+  --m3-chip-radius: 8px;
+  --m3-filter-gap: 8px;
+  --m3-filter-section-gap: 16px;
+  --m3-composer-attach: 40px;
+  --m3-composer-pad: 24px;
+  --m3-page-bar-h: 64px;
+  --m3-page-bar-pad: 4px;
+  --m3-page-bar-title: 22px;
+  --m3-page-edge: 16px;
+  --m3-page-row-h: 56px;
+  --m3-page-icon: 24px;
+  --m3-page-card-radius: 16px;
+  --m3-page-gap: 8px;
+  --m3-page-section-gap: 24px;
+  --m3-page-tile-gap: 4px;
+  --m3-page-seg-h: 40px;
+  --m3-group-radius: 20px;
+  --m3-group-inner-radius: 4px;
+  --m3-group-gap: 2px;
+  --m3-group-space: 16px;
+  --m3-settings-title: 36px;
+  --m3-settings-group-radius: 28px;
+  --m3-settings-inner-radius: 4px;
+  --m3-settings-back-size: 48px;
+  --m3-page-in-time: 300ms;
+  --m3-page-in-shift: 30px;
+  --m3-error: #b3261c;
+  --m3-on-error: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-mobile-os="android"]:not([data-theme="light"]) {
+    --m3-surface-container: #1e1f23;
+    --m3-surface-container-high: #2a2b30;
+    --m3-secondary-container: #4a4e5a;
+    --m3-on-secondary-container: #e3e3e8;
+    --m3-primary-container: #5c6070;
+    --m3-on-primary-container: #eceef8;
+    --m3-primary: #c3c8dc;
+    --m3-on-primary: #1d2030;
+    --m3-on-surface: #e3e3e3;
+    --m3-on-surface-variant: #c4c7c5;
+    --m3-on-surface-muted: #8a8f99;
+    --m3-outline-variant: #3c3f44;
+    --m3-scrim: rgba(10, 10, 12, 0.82);
+    --m3-seg-fill: rgba(118, 118, 128, 0.24);
+    --m3-seg-thumb: #636366;
+    --m3-seg-separator: rgba(84, 84, 88, 0.65);
+    --m3-error: #f2b8b5;
+    --m3-on-error: #601410;
+  }
+}
+
+/* Dunkelmodus fest in den Einstellungen gewählt: dieselben Werte wie oben */
+:root[data-mobile-os="android"][data-theme="dark"] {
+  --m3-surface-container: #1e1f23;
+  --m3-surface-container-high: #2a2b30;
+  --m3-secondary-container: #4a4e5a;
+  --m3-on-secondary-container: #e3e3e8;
+  --m3-primary-container: #5c6070;
+  --m3-on-primary-container: #eceef8;
+  --m3-primary: #c3c8dc;
+  --m3-on-primary: #1d2030;
+  --m3-on-surface: #e3e3e3;
+  --m3-on-surface-variant: #c4c7c5;
+  --m3-on-surface-muted: #8a8f99;
+  --m3-outline-variant: #3c3f44;
+  --m3-scrim: rgba(10, 10, 12, 0.82);
+  --m3-seg-fill: rgba(118, 118, 128, 0.24);
+  --m3-seg-thumb: #636366;
+  --m3-seg-separator: rgba(84, 84, 88, 0.65);
+  --m3-error: #f2b8b5;
+  --m3-on-error: #601410;
+}

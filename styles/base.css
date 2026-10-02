@@ -1,0 +1,235 @@
+/*
+ * Grundgerüst: Seite, Gerätefenster, Inhaltsbereich, Überschriften und Icons.
+ * Pfad: styles/base.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --bg / --card / --text    -> Grundfarben der Seite
+ * --stage-bg                -> Fläche rund um das Gerätefenster, wenn die App im Browser am Rechner läuft
+ * --title-size              -> Schriftgröße der großen Überschrift
+ * --title-weight            -> Strichstärke der großen Überschrift
+ * --content-side            -> Abstand des Inhalts zum linken und rechten Rand
+ * --content-top             -> Abstand unter der Suchleiste bis zum ersten Inhalt
+ * --title-side              -> Extra-Abstand der großen Überschrift
+ * --overview-gap            -> Abstand zwischen Überschrift und Karten/Inhalt
+ * --title-alt / --title-alt-gap -> Farbe und Abstand des grauen Zweittitels („Medien“ neben „Ressourcen“)
+ * --avatar-btn-bg           -> Farbe der Abschnitts-Überschriften (.section-head h2)
+ * --tab-space               -> Platz am Seitenende hinter der Navigation
+ * --device-radius           -> Rundung des Gerätefensters im Browser am Rechner
+ * --autofill-hold           -> wie lange ein Feld nach einem Browser-Vorschlag seine Farben behält
+ 
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+*/
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  /* overflow/overscroll: nur die Inhaltsflaeche scrollt, die Seite selbst nie.
+     Ohne das schiebt am Handy jeder Wisch die ganze App samt Kopf- und
+     Navigationsleiste nach oben, sobald die Browserleisten ein- oder ausfahren. */
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--stage-bg);
+  -webkit-font-smoothing: antialiased;
+  /* user-select: wie in einer nativen App lässt sich Bedientext (Menüs, Pillen,
+     Knöpfe, Zähler) nicht markieren — sonst greift ein langes Drücken statt des
+     eigenen Menüs die Beschriftung. Markierbar sind nur Felder zum Schreiben
+     (Regel darunter) und einzeln freigegebene Titel (.entry-title, .sheet-lead,
+     .page-title.is-editable). */
+  user-select: none;
+  -webkit-user-select: none;
+  /* -webkit-touch-callout: kein iPhone-Menü „Kopieren/Nachschlagen“ auf Bedientext */
+  -webkit-touch-callout: none;
+  /* -webkit-tap-highlight-color: Chrome auf Android legt beim Tippen und Halten
+     sonst seine eigene blaue Fläche über das Element — über die Zeile und die
+     drei Punkte, die seitlich hinausragen, ergab das eine gestufte Kante.
+     Gedrückt zeigt jede Fassung ihren eigenen Zustand (z.B. styles/android-list.css). */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Alles, worin man schreibt, bleibt markierbar und kopierbar */
+input,
+textarea,
+[contenteditable]:not([contenteditable="false"]) {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+/* Übernimmt man einen Vorschlag aus Chromes Leiste über der Tastatur, färbt
+   Chrome das Feld hellblau mit schwarzer Schrift — auch im Dunkelmodus. Diese
+   Farben setzt Chrome mit !important, eigenes CSS kommt dagegen nicht an.
+   transition: verschiebt den Farbwechsel um --autofill-hold, das Feld behält
+   also seinen eigenen Hintergrund (meist durchsichtig) und seine Schriftfarbe.
+   -webkit-text-fill-color / caret-color: Schrift und Schreibmarke bleiben in
+   der App-Farbe, auch wenn man danach zwischen Hell und Dunkel wechselt.
+   :-webkit-autofill ist der Name, den alle Browser verstehen; das neuere
+   :autofill in derselben Liste würde die Regel in älteren Browsern kippen. */
+input:-webkit-autofill,
+textarea:-webkit-autofill {
+  transition: background-color 0s var(--autofill-hold), color 0s var(--autofill-hold);
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+}
+
+button {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.sprites {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.stage {
+  height: 100vh; /* Rueckfall fuer Browser ohne dvh */
+  height: 100dvh; /* dvh: die wirklich sichtbare Hoehe, auch mit eingeblendeter Browserleiste */
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.device {
+  width: 390px;
+  max-width: calc(100vw - 32px);
+  height: min(844px, calc(100dvh - 32px));
+  background: var(--bg);
+  border-radius: var(--device-radius);
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.content {
+  flex: 1;
+  min-height: 0; /* min-height: sonst waechst der Flex-Bereich ueber das Geraet hinaus statt zu scrollen */
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain; /* am Listenende wird nicht die Seite darunter mitgezogen */
+  -webkit-overflow-scrolling: touch;
+  padding: var(--content-top) var(--content-side) var(--tab-space);
+  position: relative; /* position: damit der Scrollbereich fest im Gerät bleibt */
+  scrollbar-width: none;
+}
+
+.content::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ohne die allgemeine Kopfzeile (Unterseiten, styles/top-bar.css) beginnt der
+   Inhalt ganz oben: den Platz für Notch und Statusleiste übernimmt dann die
+   Kopfzeile der Seite selbst, die dort oben stehen bleibt. Ohne diese Zeile
+   liefe die Liste beim Scrollen in einer Lücke über ihr vorbei. */
+body.is-subpage .content {
+  padding-top: 0;
+}
+
+.view {
+  min-height: 100%;
+}
+
+.view[hidden] {
+  display: none !important;
+}
+
+.screen-title {
+  font-size: var(--title-size);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  font-weight: var(--title-weight);
+  margin: 0 0 var(--overview-gap);
+  padding: 0 var(--title-side);
+}
+
+/* Zweittitel neben der großen Überschrift: grau, gleich groß, führt zum verwandten Bereich */
+.title-switch {
+  border: 0;
+  padding: 0;
+  margin-left: var(--title-alt-gap);
+  background: none;
+  color: var(--title-alt);
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.title-switch:active {
+  opacity: 0.6;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  margin: var(--overview-gap) 0 var(--workspace-head-gap);
+  padding-left: var(--title-side);
+}
+
+.screen-title + .section-head {
+  margin-top: 0;
+}
+
+.section-head h2 {
+  font-size: 15px;
+  font-weight: 400; /* 400 = normal, 500 = mittel, 700 = fett */
+  color: var(--avatar-btn-bg);
+}
+
+.empty-note {
+  color: var(--muted);
+  font-size: 15px;
+  padding: 8px 2px;
+}
+
+/* Echte Touch-Geräte (Handy/Tablet) erkennen statt nur Fensterbreite:
+   so bleibt ein schmales Browserfenster am Rechner im Frame, und ein Handy im
+   "Desktop-Website"-Modus (meldet eine breite Viewport) verliert ihn trotzdem. */
+@media (hover: none) and (pointer: coarse) {
+  body {
+    background: var(--bg);
+  }
+
+  .stage {
+    padding: 0;
+  }
+
+  .device {
+    width: 100%;
+    max-width: 100%;
+    height: 100%; /* die Buehne gibt die sichtbare Hoehe bereits vor */
+    border-radius: 0;
+    box-shadow: none;
+  }
+}

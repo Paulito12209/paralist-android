@@ -1,0 +1,329 @@
+/*
+ * Aufgaben-Seite: das Kanban-Board. Waagerecht scrollende Spalten, je Spalte
+ * eine farbige Kopfzeile und darunter die Aufgaben als schlichte Zeilen mit
+ * Trennlinie — keine Karten. Erst beim Ziehen hebt sich eine Zeile als Karte
+ * ab. Angelegt wird durch Tippen in die freie Fläche einer Spalte. Die Farbe einer Spalte kommt als --col-color aus
+ * src/features/tasks/tasks-board.js und stammt aus der Liste der
+ * Dringlichkeiten bzw. Status in src/data/config.js.
+ * Am Handy rastet das Board beim Wischen an einer Spalte ein; seitlich wischen
+ * geht überall, auch über den Griff. Gezogen wird erst, wenn man den Griff
+ * kurz gedrückt hält (src/ui/board-drag.js): dann zeigen alle Griffe den
+ * Doppelstrich „=“ statt der Punkte, die Zeile hebt sich als Karte ab, und
+ * die Spalte, in der sie landen würde, bekommt einen Rahmen um die Kopfzeile.
+ * Die Kopfzeilen der Spalten bleiben beim Scrollen unter der Werkzeugzeile
+ * stehen (src/shell/board-heads.js); in der Android-Fassung rückt das Board
+ * dazu um --m3-card-head-pull nach unten, damit die Werkzeugzeile den Kopf
+ * nicht oben anschneidet (styles/android-card.css).
+ * Pfad: styles/tasks-board.css
+ *
+ * ANPASSBARE WERTE (in styles/tokens.css, die Board-Werte in styles/tokens-pages.css)
+ * -----------------------------------
+ * --board-col-width    -> Breite einer Spalte
+ * --board-gap          -> Fuge zwischen zwei Spalten
+ * --board-head-gap     -> Abstand zwischen Kopfzeile und erster Zeile
+ * --board-grip-width   -> Breite des Griffstreifens am rechten Rand einer Zeile
+ * --board-card-radius  -> Rundung der angehobenen Zeile und der Lücke
+ * --board-head-radius  -> Rundung der farbigen Kopfzeile
+ * --board-drop-min     -> Mindesthöhe einer leeren Spalte
+ * --board-head-tint    -> wie bunt der Streifen der Kopfzeile ist (styles/tokens-pages.css)
+ * --board-head-base    -> worin die Farbe gemischt wird: hell Weiß, dunkel Kartenfarbe
+ * --board-ink-l-max    -> wie hell Schrift und Icon im Streifen höchstens werden
+ * --content-side       -> Abstand des Boards zum Rand
+ * --card / --line      -> Fläche der angehobenen Zeile und die Trennlinien
+ * --muted / --chevron  -> Nebentexte, Griffpunkte und die Lücke beim Ziehen
+ * --text               -> Griffpunkte, solange der Finger den Griff hält, und der Doppelstrich der gezogenen Zeile
+ *
+ * Direkt bei ihrer Regel: Schriftgrößen einzelner Elemente (der Hinweis
+ * „Nichts hier“ und die blasse Zeile „Neue Aufgabe“ in einer leeren Spalte:
+ * je 14px, Abstand 10px oben und unten, 10px zwischen Symbol und Text), die
+ * Maße der Griffpunkte (12 × 18px, Raster 6px) und des Doppelstrichs
+ * (18 × 8px) sowie die Stärke des Rahmens um die Zielspalte (1.5px).
+*/
+
+/* Die Seite wird eine Spalte, in der der Inhalt den Rest bis zur Karte
+   „Ansicht“ füllt — nur so reicht das Board bis dorthin (s. u.). Die Liste
+   stapelt sich darin wie zuvor. */
+#view-tasks {
+  display: flex;
+  flex-direction: column;
+}
+
+.tasks-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Das Board läuft bis an beide Ränder des Geräts, damit die nächste Spalte
+   schon angeschnitten zu sehen ist, und bis hinunter zur Karte „Ansicht“:
+   Wischen in der leeren Fläche unter den Spalten rollt so ebenfalls die
+   Spalten — vorher endete das Board mit der längsten Spalte, und darunter
+   griff nur der Pillen-Wechsel, der bei einer einzigen Pille nichts tut. */
+.board {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--board-gap);
+  margin: 0 calc(-1 * var(--content-side));
+  padding: 0 var(--content-side) 4px;
+  overflow-x: auto; /* overflow: die Spalten laufen seitlich weiter */
+  overscroll-behavior-x: contain; /* am Ende wird nicht die Seite darunter mitgezogen */
+  scrollbar-width: none;
+}
+
+.board::-webkit-scrollbar {
+  display: none;
+}
+
+.board-col {
+  width: var(--board-col-width);
+  flex: 0 0 auto;
+}
+
+/* Am Handy rastet das Board an einer Spalte ein: ein Wisch führt genau eine
+   Spalte weiter, statt irgendwo zwischen zwei Spalten stehen zu bleiben. Mit
+   Maus oder Trackpad (Browser am Rechner) bleibt das Rollen frei. */
+@media (hover: none) and (pointer: coarse) {
+  .board {
+    scroll-snap-type: x mandatory; /* scroll-snap: nach dem Wischen an einer Spalte einrasten */
+    scroll-padding-inline: var(--content-side); /* scroll-padding: die Spalte rastet mit Randabstand ein, nicht am Geräterand */
+  }
+
+  .board-col {
+    scroll-snap-align: start; /* scroll-snap-align: der linke Rand der Spalte ist der Rastpunkt */
+    scroll-snap-stop: always; /* scroll-snap-stop: auch ein schneller Wisch überspringt keine Spalte */
+  }
+
+  /* Beim Ziehen einer Zeile rollt das Board am Rand von selbst in kleinen
+     Schritten weiter (src/features/tasks/tasks-drag.js) — das Einrasten würde
+     jeden Schritt zurückholen. */
+  body.is-dragging-task .board {
+    scroll-snap-type: none;
+  }
+}
+
+/* Kopfzeile: ein blasser Streifen in der Farbe der Spalte */
+.board-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: var(--board-head-gap);
+  border-radius: var(--board-head-radius);
+  /* color-mix: dieselbe Farbe, nur weit heruntergemischt — im Hellen in Weiß
+     (Pastell, hebt sich vom grauen Grund ab), im Dunkeln in die Kartenfarbe */
+  background: color-mix(in srgb, var(--col-color) var(--board-head-tint), var(--board-head-base));
+  color: var(--col-color);
+  font-size: 15px;
+  font-weight: 600;
+  position: relative; /* position: nötig, damit z-index greift — die Zeilen laufen beim Scrollen unter dem Kopf durch */
+  z-index: 2; /* z-index: über den Zeilen der Spalte, unter der gezogenen Zeile (40) */
+  /* transform: src/shell/board-heads.js schiebt den Kopf beim Scrollen nach
+     unten, damit er unter der Werkzeugzeile stehen bleibt; ohne Wert steht er an seinem Platz */
+  transform: translateY(var(--board-head-shift, 0px));
+}
+
+/* Solange der Kopf festgehalten ist, läuft die Liste unter ihm durch. Die Fuge
+   zur ersten Zeile bekommt dann die Farbe der Seite, sonst schiene dort Text durch. */
+[data-board-stuck] .board-head {
+  box-shadow: 0 var(--board-head-gap) 0 var(--bg); /* box-shadow: deckt die Fuge unter dem Kopf ab, ohne etwas zu verschieben */
+}
+
+/* Die Spaltenfarben sind für den dunklen Grund gebaut und auf dem hellen
+   Pastell zu blass. Schrift und Icon werden deshalb in der Helligkeit
+   gedeckelt, Farbton und Sättigung bleiben — dieselbe Formel wie beim Icon
+   eines Eintrags (styles/page-cover.css). Im Dunkeln greift die Grenze nicht. */
+@supports (color: oklch(from red l c h)) {
+  .board-head {
+    color: oklch(from var(--col-color) clamp(0, l, var(--board-ink-l-max)) c h); /* oklch(from …): s. o. */
+  }
+}
+
+.board-head-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.board-head-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden; /* overflow: nötig für text-overflow */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Anzahl am Ende der Kopfzeile: nur die Zahl, in derselben Farbe wie der
+   Name — eine eigene Blase darum wäre ein zweiter Fleck im Streifen. */
+.board-count {
+  padding-right: 2px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums; /* font-variant-numeric: 1 und 11 sind gleich breit, die Zahl springt nicht */
+}
+
+.board-rows {
+  min-height: var(--board-drop-min);
+}
+
+/* ---------- Zeile ---------- */
+
+/* Dieselbe Trennlinie wie in allen übrigen Listen. Zwischen zwei Zeilen gibt
+   es keine Fuge, also auch keine tote Stelle, an der eine gezogene Zeile nicht
+   weiß, wohin sie gehört. */
+.board-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0 8px 4px;
+  border-bottom: 0.5px solid var(--line);
+}
+
+.board-row-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.board-row-title {
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.board-row .task-check {
+  flex: 0 0 auto;
+}
+
+/* Griffstreifen: so hoch wie die Zeile und breit genug für den Daumen. Die
+   sechs Punkte darin (zwei Spalten, drei Reihen — wie die Sechs auf einem
+   Würfel, hochkant) werden gezeichnet statt als eigenes Icon geladen.
+   Kein touch-action: vor dem Halten rollt ein Wisch über den Griff das Board
+   wie überall; erst die gelöste Zeile nimmt dem Browser das Rollen ab. */
+.board-grip {
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: var(--board-grip-width);
+  display: grid;
+  place-items: center;
+  cursor: grab;
+}
+
+.board-grip::before {
+  content: "";
+  width: 12px;
+  height: 18px;
+  background-image: radial-gradient(circle, var(--chevron) 1.4px, transparent 1.6px);
+  background-size: 6px 6px; /* der Abstand der Punkte zueinander */
+}
+
+.board-grip:active {
+  cursor: grabbing;
+}
+
+/* Der Finger liegt auf dem Griff und wartet: die Punkte werden kräftiger,
+   damit man sieht, dass das Halten gleich greift */
+.board-row.is-grip-hold .board-grip::before {
+  background-image: radial-gradient(circle, var(--text) 1.4px, transparent 1.6px);
+}
+
+/* Solange eine Zeile gelöst ist, zeigen alle Griffe den Doppelstrich „=“
+   (Material 3 „drag handle“) — zwei Striche, 2px stark, 4px Luft dazwischen */
+body.is-dragging-task .board-grip::before {
+  width: 18px;
+  height: 8px;
+  background-image: repeating-linear-gradient(to bottom, var(--chevron) 0 2px, transparent 2px 6px);
+  background-size: 100% 100%;
+}
+
+body.is-dragging-task .board-row.is-dragging .board-grip::before {
+  background-image: repeating-linear-gradient(to bottom, var(--text) 0 2px, transparent 2px 6px);
+}
+
+.board-empty {
+  padding: 10px 4px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Android: statt des Hinweises eine blasse Zeile zum Anlegen — Symbol und Text
+   in der Farbe des Hinweises, ohne Rahmen. Beide Varianten teilen sich die Regeln
+   darunter (verschwinden beim Ziehen und beim Schreiben). */
+.board-add {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.board-add .icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+}
+
+.board-add:active {
+  opacity: 0.55;
+}
+
+/* Solange eine Zeile in der Spalte liegt, ist der Hinweis überflüssig */
+.board-rows:has(.board-gap) .board-empty {
+  display: none;
+}
+
+/* Die Zeile zum Anlegen (src/features/tasks/tasks-inline.js) steht im Board
+   wie jede andere Zeile: Ring links, dann das Feld, rechts frei wie der Griff */
+.board-row.task-inline {
+  padding-right: var(--board-grip-width);
+}
+
+/* Solange in der Spalte geschrieben wird, ist der Hinweis „Nichts hier“ überflüssig */
+.board-col.is-adding .board-empty {
+  display: none;
+}
+
+/* ---------- Ziehen ---------- */
+
+/* Die gezogene Zeile hebt sich als Karte ab, hängt am Zeiger und liegt über
+   allem anderen */
+.board-row.is-dragging {
+  position: absolute; /* position: die Zeile verlässt ihre Spalte und folgt dem Zeiger */
+  z-index: 40; /* z-index: über den übrigen Spalten, unter Blättern und Menüs */
+  pointer-events: none; /* pointer-events: sonst misst der Zeiger immer nur sich selbst */
+  padding-left: 12px;
+  border-bottom-color: transparent;
+  border-radius: var(--board-card-radius);
+  background: var(--card);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  opacity: 0.95;
+  transform: translate(0, 0); /* transform: die Bewegung läuft nur hierüber */
+}
+
+/* Die Lücke zeigt, wo die Zeile landet. Ihre Höhe kommt von der Zeile selbst. */
+.board-gap {
+  box-sizing: border-box;
+  border-radius: var(--board-card-radius);
+  border: 1px dashed var(--chevron);
+}
+
+/* Die Spalte, in der die Lücke steht: ein Rahmen in ihrer Farbe um die
+   Kopfzeile sagt schon von weitem, wo die Zeile landen würde */
+.board-col.is-drop-over .board-head {
+  box-shadow: inset 0 0 0 1.5px var(--col-color);
+}
+
+/* Während des Ziehens soll nichts markiert werden */
+body.is-dragging-task {
+  user-select: none;
+}
+
+/* Dunkelmodus: Board-Drag-Schatten invertieren (weiß statt schwarz) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .board-row.is-lifted {
+    box-shadow: 0 0 28px rgba(255, 255, 255, 0.12);
+  }
+}
+:root[data-theme="dark"] .board-row.is-lifted {
+  box-shadow: 0 0 28px rgba(255, 255, 255, 0.12);
+}

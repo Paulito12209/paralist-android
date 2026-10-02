@@ -1,0 +1,151 @@
+/*
+ * Android-Fassung, die Werkzeugzeile über den Listen (Projekte auf Übersicht
+ * und Seite Projekte, Aufgaben, Eingang, Favoriten, Ressourcen, Lesezeichen,
+ * Arbeitsbereiche, Archiv), gebaut nach Google Tasks: links der Text-Knopf
+ * „Archiv“ — mit der Zahl der archivierten Dinge in Klammern, sobald es welche
+ * gibt —, rechts Sortieren und, wo sich etwas filtern lässt, Filtern und
+ * Ansicht (src/ui/list-head.js). Die Klassen heißen project-card-…, gelten aber für
+ * jede dieser Zeilen. Wo Reiter darüber stehen (Projekte, Aufgaben, Arbeitsbereiche), rückt
+ * die Zeile dicht unter ihre Linie; ohne Reiter (`is-plain`) steht sie unter dem Titel. Die Liste darunter
+ * liegt ohne eigene Fläche auf der Seite; getönte Flächen bleiben Leiste,
+ * Kacheln und Suchleiste vorbehalten. Die Reiterzeile darüber behält ihre
+ * Trennlinie (styles/android-tabs.css), nur das Symbol „Ansicht“ rechts
+ * entfällt — Umbenennen, Löschen & Co. kommen beim Halten eines Reiters als
+ * Blatt von unten (styles/android-bottom-sheet.css).
+ * Gilt nur mit data-mobile-os="android" an <html> und unterhalb von 1024px;
+ * die Werkzeugzeile ist in den anderen Fassungen unsichtbar.
+ * Pfad: styles/android-card.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens-android.css)
+ * -----------------------------------
+ * --m3-card-head-h            -> Höhe der Werkzeugzeile
+ * --m3-card-tool-size / -icon -> Tippfläche und Symbol von Sortieren, Filtern und Ansicht
+ * --m3-text-btn-h / -pad      -> Höhe und Innenabstand des Text-Knopfs „Archiv“
+ * --m3-state-pressed          -> Tönung von Knopf und Symbolen beim Drücken
+ * --m3-primary                -> das Filter-Symbol, sobald die Ansicht aussiebt; als Grundfarbe von
+ *                                „Archiv“ hier, die leise Farbe darüber setzt styles/android-quiet-tools.css
+ * --m3-on-surface             -> Grundfarbe der Tönung beim Drücken
+ * --m3-on-surface-variant     -> Sortieren und Filtern in Ruhe
+ * --m3-card-head-pull       -> wie dicht die erste Zeile an der Werkzeugzeile sitzt
+ * --m3-card-head-plain-gap  -> Luft zwischen Titel und Werkzeugzeile, wo keine Reiter darüber stehen
+ * --m3-tab-edge               -> Abstand des Archiv-Icons vom Geräterand, auf einer Linie mit dem ersten Reiter
+ * --content-side              -> Rand der Reiter, sobald rechts kein Symbol mehr steht (styles/tokens.css)
+ *
+ * Direkt bei ihrer Regel: Schrift von „Archiv“ 14px halbfett (Material 3
+ * „Label large“), sein Icon 18px.
+ */
+
+/* Außerhalb der Android-Fassung gibt es die Werkzeugzeile nicht */
+.project-card-head {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  /* ---------- Die Reiterzeile ohne Symbol rechts ---------- */
+
+  /* Aufgaben und Arbeitsbereiche: dieselbe Reiterzeile wie bei den Projekten —
+     ✓+, Ordner-Plus und „Ansicht“ entfallen, Anlegen geht über die Liste und
+     „Neu“, Sortieren und Filtern über die Werkzeugzeile darunter. */
+  [data-mobile-os="android"] :is(.tasks-tools .tab-pills-tools, .tab-pills-row:has(> .collection-pills) > .tab-pills-tools) {
+    display: none;
+  }
+
+  [data-mobile-os="android"] :is(.tasks-tools, .tab-pills-row:has(> .collection-pills)) > .tab-pills,
+  [data-mobile-os="android"] .tasks-tools .tab-pills-row > .tab-pills {
+    padding-right: calc(var(--content-side) + 2px);
+    scroll-padding-right: var(--content-side);
+  }
+
+  [data-mobile-os="android"] :is(#project-views, .page-body > .project-views) .tab-pills-tools {
+    display: none;
+  }
+
+  /* Ohne Werkzeuge rechts laufen die Reiter bis an den Rand */
+  [data-mobile-os="android"] :is(#project-views, .page-body > .project-views) .tab-pills {
+    padding-right: calc(var(--content-side) + 2px);
+    scroll-padding-right: var(--content-side);
+  }
+
+  /* ---------- Die Werkzeugzeile ---------- */
+
+  /* Die Zeile beginnt gleich unter der Reiterlinie: der Abstand --m3-tabs-gap,
+     den die Reiterzeile sonst lässt, wird hier zurückgenommen. Die Symbole
+     (48px Tippfläche) bringen ihre Luft selbst mit — mehr Abstand wirkte zu weit. */
+  [data-mobile-os="android"] .project-card-head {
+    display: flex;
+    align-items: center;
+    min-height: var(--m3-card-head-h);
+    margin-top: calc(-1 * var(--m3-tabs-gap));
+    margin-bottom: calc(-1 * var(--m3-card-head-pull));
+  }
+
+  /* Die Werkzeugzeile zieht den Inhalt um --m3-card-head-pull unter sich — bei
+     Zeilen gewollt, beim Board würde sie dadurch den oberen Rand der Spaltenköpfe
+     abschneiden. Das Board rückt um dasselbe Maß wieder nach unten. */
+  [data-mobile-os="android"] .project-card-head ~ .board {
+    margin-top: var(--m3-card-head-pull);
+  }
+
+  /* Reiter einer Sammlung (Ressourcen, Archiv, Arbeitsbereiche): wie bei Projekten und
+     Aufgaben lässt die Reiterzeile nur --m3-tabs-gap Luft, die Werkzeugzeile zieht sie wieder zurück */
+  [data-mobile-os="android"] .page-body > :is(.tab-pills, .tab-pills-row):has(+ .project-card-head) {
+    margin-bottom: var(--m3-tabs-gap);
+  }
+
+  /* Ohne Reiter darüber: unter dem Titel mit etwas Luft, nicht unter eine Linie gezogen */
+  [data-mobile-os="android"] .project-card-head.is-plain {
+    margin-top: var(--m3-card-head-plain-gap);
+  }
+
+  /* Text-Knopf nach Material 3: kein Rahmen, keine Fläche, Schrift in der
+     Akzentfarbe. Der negative Rand setzt das Icon auf die Fluchtlinie der Liste. */
+  [data-mobile-os="android"] .project-card-archive {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: var(--m3-text-btn-h);
+    margin-left: calc(var(--m3-tab-edge) - var(--content-side) - var(--m3-text-btn-pad));
+    padding: 0 var(--m3-text-btn-pad);
+    border-radius: calc(var(--m3-text-btn-h) / 2);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--m3-primary);
+  }
+
+  [data-mobile-os="android"] .project-card-archive .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Die Symbole rechts schieben sich ans Ende, auch ohne Knopf links. Ihre
+     Tippflächen ragen über den Rand, damit die Symbole bündig mit den drei
+     Punkten der Zeilen darunter stehen. */
+  [data-mobile-os="android"] .project-card-tools {
+    display: flex;
+    flex: 0 0 auto;
+    margin-left: auto;
+    margin-right: calc((var(--m3-card-tool-icon) - var(--m3-card-tool-size)) / 2);
+  }
+
+  [data-mobile-os="android"] .project-card-tool {
+    display: grid;
+    place-items: center;
+    width: var(--m3-card-tool-size);
+    height: var(--m3-card-tool-size);
+    border-radius: 50%;
+    color: var(--m3-on-surface-variant);
+  }
+
+  [data-mobile-os="android"] .project-card-tool .icon {
+    width: var(--m3-card-tool-icon);
+    height: var(--m3-card-tool-icon);
+  }
+
+  [data-mobile-os="android"] .project-card-tool.is-active {
+    color: var(--m3-primary);
+  }
+
+  [data-mobile-os="android"] :is(.project-card-tool, .project-card-archive):active {
+    background: color-mix(in srgb, var(--m3-on-surface) var(--m3-state-pressed), transparent);
+  }
+}

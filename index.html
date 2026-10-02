@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="de" data-mobile-os="android">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Paralist</title>
+    <meta name="description" content="Paralist — Android-Fassung: Übersicht, Kalender, Aufgaben und Medien." />
+
+    <!-- Als App auf dem Startbildschirm: Android liest das Manifest. -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+
+    <script>
+      /* Darstellung früh setzen, sonst blitzt beim Laden kurz die helle Ansicht auf. */
+      try {
+        var savedTheme = localStorage.getItem("paralist-theme");
+        if (savedTheme === "light" || savedTheme === "dark") document.documentElement.dataset.theme = savedTheme;
+      } catch (error) {}
+      /* Spielart „Android (Experiment)“ (Einstellungen › Mehr › Versionen) ebenso früh, damit ihre Stile schon im ersten Bild greifen; Vorgabe wie in src/data/platform-versions.js. */
+      try {
+        var versions = JSON.parse(localStorage.getItem("paralist-versions")) || {};
+        if (versions.mobile === "android-experiment") document.documentElement.dataset.mobileVariant = "experiment";
+      } catch (error) {}
+
+      /* Icons schon jetzt holen (zwei Dateien wegen der 400-Zeilen-Grenze je Datei);
+         src/shell/sprite.js hängt sie später ein und versucht es bei einem
+         Fehlschlag noch einmal. */
+      window.__paralistSprites = ["assets/icons/sprite.svg", "assets/icons/sprite-2.svg"].map(function (path) {
+        return fetch(path).then(function (r) { return r.ok ? r.text() : null; }).catch(function () { return null; });
+      });
+    </script>
+
+    <!-- Stile in der Reihenfolge der Kaskade: erst die Werte, dann das Grundgerüst, dann die
+         einzelnen Seiten. Welche Datei welche Werte enthält, steht in styles/tokens.css und in
+         README.md; tokens-dark.css steht hinter beiden Wert-Dateien und überschreibt sie. -->
+    <link rel="stylesheet" href="styles/tokens.css" /><link rel="stylesheet" href="styles/tokens-pages.css" />
+    <link rel="stylesheet" href="styles/tokens-dark.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/top-bar.css" />
+    <link rel="stylesheet" href="styles/overview.css" /><link rel="stylesheet" href="styles/overview-more.css" />
+    <link rel="stylesheet" href="styles/rows.css" /><link rel="stylesheet" href="styles/page-hero.css" /><link rel="stylesheet" href="styles/swipe-rows.css" />
+    <link rel="stylesheet" href="styles/empty-state.css" />
+    <link rel="stylesheet" href="styles/entry.css" /><link rel="stylesheet" href="styles/entry-details.css" /><link rel="stylesheet" href="styles/page-cover.css" /><link rel="stylesheet" href="styles/blocks.css" /><link rel="stylesheet" href="styles/embeds.css" /><link rel="stylesheet" href="styles/slash-menu.css" /><link rel="stylesheet" href="styles/block-bar.css" />
+    <link rel="stylesheet" href="styles/navigation.css" />
+    <link rel="stylesheet" href="styles/composer.css" />
+    <link rel="stylesheet" href="styles/composer-attachments.css" />
+    <link rel="stylesheet" href="styles/toast.css" />
+    <link rel="stylesheet" href="styles/reminder-banner.css" />
+    <link rel="stylesheet" href="styles/update.css" />
+    <link rel="stylesheet" href="styles/overlays.css" /><link rel="stylesheet" href="styles/sheet-tabs.css" /><link rel="stylesheet" href="styles/sheet-tiles.css" /><link rel="stylesheet" href="styles/details.css" />
+    <link rel="stylesheet" href="styles/modal-top.css" />
+    <link rel="stylesheet" href="styles/search.css" /><link rel="stylesheet" href="styles/search-refine.css" />
+    <link rel="stylesheet" href="styles/progress.css" /><link rel="stylesheet" href="styles/milestones.css" />
+    <link rel="stylesheet" href="styles/profile.css" /><link rel="stylesheet" href="styles/account.css" /><link rel="stylesheet" href="styles/usage-split.css" /><link rel="stylesheet" href="styles/avatar-crop.css" />
+    <link rel="stylesheet" href="styles/settings.css" />
+    <link rel="stylesheet" href="styles/support.css" />
+    <link rel="stylesheet" href="styles/calendar.css" />
+    <link rel="stylesheet" href="styles/calendar-panel.css" />
+    <link rel="stylesheet" href="styles/sort-wheels.css" /><link rel="stylesheet" href="styles/filter-sheet.css" /><link rel="stylesheet" href="styles/info-dialog.css" />
+    <link rel="stylesheet" href="styles/tasks.css" />
+    <link rel="stylesheet" href="styles/tasks-board.css" /><link rel="stylesheet" href="styles/projects-board.css" /><link rel="stylesheet" href="styles/tasks-select.css" /><link rel="stylesheet" href="styles/task-status.css" /><link rel="stylesheet" href="styles/tasks-settings.css" /><link rel="stylesheet" href="styles/view-end.css" />
+    <link rel="stylesheet" href="styles/media.css" /><link rel="stylesheet" href="styles/bookmarks.css" />
+    <link rel="stylesheet" href="styles/viewer.css" />
+    <link rel="stylesheet" href="styles/drawing.css" /><link rel="stylesheet" href="styles/video-player.css" />
+    <!-- Android-Fassung: nach den Seiten, damit sie deren Grundregeln überschreibt -->
+    <link rel="stylesheet" href="styles/tokens-android.css" /><link rel="stylesheet" href="styles/android.css" /><link rel="stylesheet" href="styles/android-tabs.css" /><link rel="stylesheet" href="styles/android-fab.css" /><link rel="stylesheet" href="styles/android-sheet.css" /><link rel="stylesheet" href="styles/android-archive.css" /><link rel="stylesheet" href="styles/android-view-btn.css" /><link rel="stylesheet" href="styles/android-entry.css" /><link rel="stylesheet" href="styles/android-list.css" /><link rel="stylesheet" href="styles/android-reorder.css" /><link rel="stylesheet" href="styles/android-card.css" /><link rel="stylesheet" href="styles/android-bottom-sheet.css" /><link rel="stylesheet" href="styles/android-filter-sheet.css" /><link rel="stylesheet" href="styles/android-segmented.css" /><link rel="stylesheet" href="styles/android-tab-snap.css" /><link rel="stylesheet" href="styles/android-overview-gaps.css" /><link rel="stylesheet" href="styles/android-quiet-tools.css" /><link rel="stylesheet" href="styles/android-calendar.css" /><link rel="stylesheet" href="styles/android-calendar-tabs.css" /><link rel="stylesheet" href="styles/android-calendar-rings.css" /><link rel="stylesheet" href="styles/android-composer.css" /><link rel="stylesheet" href="styles/android-pages.css" /><link rel="stylesheet" href="styles/android-pages-content.css" /><link rel="stylesheet" href="styles/android-settings-tiles.css" /><link rel="stylesheet" href="styles/android-settings-groups.css" /><link rel="stylesheet" href="styles/android-settings-google.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <div class="device">
+        <header class="top-bar">
+          <!-- Level-Anzeige: Striche rundherum zeigen den Fortschritt bis zur nächsten Stufe -->
+          <button class="level-btn" id="level-btn" type="button" aria-label="Fortschritt öffnen">
+            <svg class="level-gauge" id="level-gauge" viewBox="0 0 48 48" aria-hidden="true"></svg>
+          </button>
+          <label class="search" id="search-entry">
+            <svg class="icon search-icon"><use href="#icon-search"></use></svg>
+            <input id="search-input" type="search" placeholder="Suchen" form="no-history" /><button class="search-clear" id="search-clear" type="button" aria-label="Eingabe löschen"><svg class="icon"><use href="#icon-close"></use></svg></button>
+          </label>
+          <button class="avatar" id="profile-btn" type="button" aria-label="Einstellungen öffnen">
+            <svg class="icon"><use href="#icon-profile"></use></svg>
+          </button>
+        </header>
+
+        <main class="content">
+          <section class="view is-active" id="view-home" data-view="home">
+            <h1 class="screen-title">Übersicht</h1>
+
+            <!-- data-own-swipe: waagerecht wischen schiebt die zweite Kartenseite herein, statt die Ansicht zu wechseln; die Linie darunter zeigt, welche Seite steht. -->
+            <div class="overview-grid" id="overview-grid" data-own-swipe></div><div class="overview-pager" id="overview-pager" aria-hidden="true"><span class="overview-pager-thumb"></span></div>
+
+            <!-- Projekte: der Pfeil öffnet die Seite Projekte. Darunter die Pillen der Ansichten und die Liste, beides aus src/features/overview/projects.js -->
+            <div class="section-head project-head"><h2><button class="section-link" type="button" data-open-projects="1" aria-label="Alle Projekte öffnen">Projekte<svg class="icon"><use href="#icon-arrow-up-right"></use></svg></button></h2></div>
+            <div class="project-views" id="project-views"></div>
+            <div class="project-list" id="project-list"></div>
+          </section>
+
+          <section class="view" id="view-page" data-view="page" hidden>
+            <!-- Kopfzeile bleibt oben; beim Scrollen: Suche bzw. kleiner Titel (src/ui/head-title.js) -->
+            <div class="page-head" id="page-head">
+              <button class="back-btn" id="back-btn" type="button" aria-label="Zurück">
+                <svg class="icon"><use href="#icon-back"></use></svg>
+              </button>
+              <span class="entry-crumb page-crumb" id="page-crumb" hidden></span><span class="head-title" hidden><span class="head-title-main"></span><span class="head-title-sub"></span></span>
+              <div class="page-head-reveal" id="page-head-reveal">
+                <button class="search page-search" id="page-search" type="button" aria-label="Suchen">
+                  <svg class="icon search-icon"><use href="#icon-search"></use></svg>
+                  <span class="page-search-label">Suchen</span>
+                </button>
+              </div>
+              <!-- Symbol „Ansicht“: holt in der Android-Fassung das Blatt mit Sortieren und Filtern herauf (styles/android-sheet.css) -->
+              <button class="view-panel-btn" type="button" data-view-panel-open aria-label="Ansicht" title="Ansicht"><svg class="icon"><use href="#icon-panel-open"></use></svg></button>
+              <button class="head-btn page-menu" id="page-menu" type="button" aria-label="Optionen">
+                <svg class="icon"><use href="#icon-dots"></use></svg>
+              </button>
+            </div>
+            <div class="page-hero-icon" id="page-hero-icon" hidden></div><h1 class="screen-title page-title" id="page-title">Platzhalter</h1><p class="page-intro" id="page-intro" hidden></p>
+            <div class="page-body" id="page-body"></div>
+          </section>
+
+          <!-- Editor-Seite: oeffnet sich beim Antippen eines Eintrags -->
+          <section class="view" id="view-entry" data-view="entry" hidden>
+            <div class="page-head" id="entry-head">
+              <button class="back-btn" id="entry-back" type="button" aria-label="Zurück">
+                <svg class="icon"><use href="#icon-back"></use></svg>
+              </button>
+              <span class="entry-crumb" id="entry-crumb"></span><span class="head-title" hidden><span class="head-title-main"></span><span class="head-title-sub"></span></span>
+              <button class="head-btn" id="entry-menu" type="button" aria-label="Seitenmenü">
+                <svg class="icon"><use href="#icon-dots"></use></svg>
+              </button>
+            </div>
+            <!-- Das selbst gewählte Icon über dem Titel, ein Tipp darauf wechselt es (src/features/entry/entry-cover.js; das Cover legt src/ui/page-cover.js selbst an); der Titel ist contenteditable, damit er umbricht und nach einigen Zeilen mit „…“ endet -->
+            <button class="entry-icon" id="entry-icon" type="button" aria-label="Icon ändern" hidden></button><div class="entry-title" id="entry-title" contenteditable="plaintext-only" role="textbox" aria-label="Titel" data-placeholder="Ohne Titel" spellcheck="false" enterkeyhint="done"></div>
+            <!-- Pillen wie auf der Seite eines Arbeitsbereichs, rechts die Knöpfe der gewählten Pille (Kopieren bzw. Filter und Plus) -->
+            <div class="page-pills-row"><div class="tab-pills page-pills" id="entry-pills"></div><div class="page-tools" id="entry-tools"></div></div>
+            <div class="entry-panel" id="entry-panel-notes">
+              <!-- Bausteine (Text, Listen, Checkboxen, Karten): jede Zeile ist ein eigener bearbeitbarer Block, siehe src/ui/block-editor.js -->
+              <div class="entry-body note-blocks" id="entry-body" role="group" aria-label="Inhalt"></div>
+              <!-- canvas: Zeichenfläche statt des Textes bei Einträgen vom Typ Zeichnung -->
+              <div class="draw-pad" id="draw-pad" hidden>
+                <canvas id="draw-canvas"></canvas>
+              </div>
+              <!-- Zeichenwerkzeuge wie Apples Stiftpalette: Stift, Marker, Radierer, Farben, Rückgängig; nur auf einer Zeichnung, zwischen Zeichenfläche und Karte „Details“ -->
+              <div class="draw-tools" id="draw-tools">
+                <button class="draw-tool is-active" type="button" data-draw-tool="pen" aria-label="Stift">
+                  <svg class="icon"><use href="#icon-pencil"></use></svg>
+                </button>
+                <button class="draw-tool" type="button" data-draw-tool="marker" aria-label="Marker">
+                  <svg class="icon"><use href="#icon-marker"></use></svg>
+                </button>
+                <button class="draw-tool" type="button" data-draw-tool="eraser" aria-label="Radierer">
+                  <svg class="icon"><use href="#icon-eraser"></use></svg>
+                </button>
+                <span class="draw-split"></span>
+                <div class="draw-colors" id="draw-colors"></div>
+                <span class="draw-split"></span>
+                <button class="draw-tool" type="button" data-draw-undo="1" aria-label="Rückgängig">
+                  <svg class="icon"><use href="#icon-undo"></use></svg>
+                </button>
+              </div>
+            </div>
+            <div class="entry-panel" id="entry-panel-links" hidden>
+              <!-- Bei einem Projekt: was darin liegt. Sonst: womit der Eintrag verknüpft ist -->
+              <div class="entry-links" id="entry-links"></div>
+            </div>
+          </section>
+
+          <!-- Suchen: Inhalt kommt aus src/features/search/search.js, damit die Listen echte Einträge zeigen -->
+          <section class="view" id="view-search" data-view="search" hidden>
+            <div id="search-results"></div>
+          </section>
+
+          <!-- Kalender: gewählter Tag, Wochenstreifen und darunter die Fläche mit Stundenraster oder Liste; das Panel „Ansicht“ legt src/features/calendar/calendar-settings.js an -->
+          <section class="view" id="view-calendar" data-view="calendar" hidden>
+            <h1 class="screen-title">Kalender</h1>
+            <!-- cal-head rastet unter der Suchleiste ein: Datumszeile und Wochenstreifen bleiben stehen, nur der Titel scrollt weg (styles/calendar.css) -->
+            <div class="cal-head" id="cal-head">
+              <div class="cal-date-row">
+                <button class="cal-month" id="cal-month" type="button" aria-label="Datum wählen">
+                  <span id="cal-month-label">Datum</span>
+                  <svg class="icon"><use href="#icon-chevron"></use></svg>
+                </button>
+                <button class="cal-kw" id="cal-kw" type="button" aria-label="Woche wählen">KW</button>
+                <!-- Symbol „Ansicht“ (Regler) der Android-Fassungen; in der Listenansicht steht es stattdessen rechts in der Reiterzeile (styles/android-calendar-tabs.css) -->
+                <button class="view-panel-btn" type="button" data-view-panel-open aria-label="Ansicht" title="Ansicht"><svg class="icon"><use href="#icon-tune"></use></svg></button>
+              </div>
+              <div class="cal-strip" id="cal-strip">
+                <div class="cal-week-head">
+                  <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span>
+                </div>
+                <div class="cal-weeks" id="cal-weeks"></div>
+              </div>
+            </div>
+            <div class="cal-panel" id="cal-panel"></div>
+          </section>
+
+          <!-- Aufgaben: Titel allein, darunter die Pillen der Ansichten, dann Liste oder Board, am Ende die Karte „Ansicht“; alles aus src/features/tasks/ -->
+          <section class="view" id="view-tasks" data-view="tasks" hidden>
+            <h1 class="screen-title">Aufgaben</h1><div class="tasks-tools" id="tasks-tools"></div>
+            <div class="tasks-body" id="tasks-body"></div>
+          </section>
+
+          <!-- Medien: Filter-Pillen wie über den Arbeitsbereichen, darunter das Raster nach Monaten -->
+          <section class="view" id="view-media" data-view="media" hidden>
+            <h1 class="screen-title">Medien<button class="title-switch" type="button" data-title-switch="resources">Ressourcen</button></h1>
+            <div class="tab-pills media-filters" id="media-filters"></div>
+            <div class="media-body" id="media-body"></div>
+          </section>
+        </main>
+
+        <footer class="bottom-bar">
+          <!-- Medien-Knöpfe: als Gruppe mittig über der Navigation; von links Import, Audio, Video und ganz rechts Foto; nur auf der Medien-Seite zu sehen -->
+          <div class="media-actions" id="media-actions">
+            <button class="media-btn" type="button" data-media-pick="import" aria-label="Importieren">
+              <svg class="icon"><use href="#icon-import"></use></svg>
+            </button>
+            <button class="media-btn" type="button" data-media-pick="audio" aria-label="Audio hinzufügen">
+              <svg class="icon"><use href="#icon-mic"></use></svg>
+            </button>
+            <button class="media-btn" type="button" data-media-pick="video" aria-label="Video aufnehmen">
+              <svg class="icon"><use href="#icon-video"></use></svg>
+            </button>
+            <button class="media-btn" type="button" data-media-pick="photo" aria-label="Foto aufnehmen">
+              <svg class="icon"><use href="#icon-camera"></use></svg>
+            </button>
+          </div>
+          <!-- input type=file: unsichtbar; nur so kann der Browser Kamera oder Dateiauswahl öffnen -->
+          <input id="media-file-photo" type="file" accept="image/*" capture="environment" hidden />
+          <input id="media-file-video" type="file" accept="video/*" capture="environment" hidden />
+          <input id="media-file-audio" type="file" accept="audio/*" multiple hidden />
+          <input id="media-file-import" type="file" multiple hidden />
+          <!-- Suchen-Knoepfe: Mikrofon+Suchen teilen sich ein mittig stehendes Gehaeuse, Abbrechen steht separat rechts daneben -->
+          <div class="search-actions" id="search-actions">
+            <div class="search-combo"><button class="search-combo-btn" type="button" id="search-voice" aria-label="Suche einsprechen"><svg class="icon"><use href="#icon-mic"></use></svg></button><button class="search-combo-btn is-active" type="button" id="search-pill">Suchen</button></div>
+            <button class="search-cancel" type="button" id="search-close">Abbrechen</button>
+          </div>
+          <!-- nav-shell: derselbe runde Container fuer Navigation und Composer -->
+          <div class="nav-shell" id="nav-shell">
+          <!-- nav: untere App-Leiste mit den Hauptseiten -->
+          <nav class="tab-bar" id="tab-bar" aria-label="Hauptnavigation">
+            <button class="tab-btn is-active" type="button" data-tab="home" aria-current="page">
+              <span class="tab-circle"><svg class="icon"><use href="#icon-grid"></use></svg><span class="tab-label">Übersicht</span></span>
+            </button>
+            <button class="tab-btn" type="button" data-tab="calendar">
+              <span class="tab-circle"><svg class="icon"><use href="#icon-calendar"></use></svg><span class="tab-label">Kalender</span></span>
+            </button>
+            <button class="tab-add" type="button" aria-label="Hinzufügen">
+              <svg class="icon"><use href="#icon-plus-ticks"></use></svg>
+            </button>
+            <button class="tab-btn" type="button" data-tab="tasks">
+              <span class="tab-circle"><svg class="icon"><use href="#icon-checklist"></use></svg><span class="tab-label">Aufgaben</span></span>
+            </button>
+            <button class="tab-btn" type="button" data-tab="media">
+              <span class="tab-circle"><svg class="icon"><use href="#icon-photos"></use></svg><span class="tab-label">Medien</span></span>
+            </button>
+          </nav>
+
+          <!-- composer: ersetzt die Navigation im selben Container beim Anlegen -->
+          <div class="composer" id="composer" hidden>
+            <!-- Anhänge: Vorschauen der gewählten Medien über den Pillen -->
+            <div class="composer-attachments" id="composer-attachments" hidden></div>
+            <!-- Oben: links die beiden Pillen, rechts der Anlegen-Knopf -->
+            <div class="composer-top">
+              <div class="composer-chips">
+                <button class="composer-link" type="button" id="composer-link">
+                  <svg class="icon"><use href="#icon-link"></use></svg>
+                  <span id="composer-link-label">Eingang</span>
+                  <svg class="icon composer-caret"><use href="#icon-chevron"></use></svg>
+                </button>
+                <!-- Typ-Pille: zeigt den gewählten Typ; ohne gewählten Knopf unten wird der Eintrag ein Dokument -->
+                <button class="composer-link" type="button" id="composer-type-pill">
+                  <svg class="icon"><use id="composer-type-icon" href="#icon-doc"></use></svg>
+                  <span id="composer-type-label">Dokument</span>
+                  <svg class="icon composer-caret"><use href="#icon-chevron"></use></svg>
+                </button>
+              </div>
+              <!-- Anlegen-Knopf: legt den Eintrag an, auch ohne Enter-Taste auf dem Handy -->
+              <button class="composer-send" type="button" id="composer-send" aria-label="Anlegen">
+                <svg class="icon"><use href="#icon-arrow-up"></use></svg><span class="composer-send-label">Speichern</span><!-- Wort: nur im Blatt der Android-Fassung zu sehen -->
+              </button>
+            </div>
+            <!-- placeholder: wird je nach gewähltem Typ aus src/features/composer/composer.js gesetzt -->
+            <input
+              class="composer-input"
+              id="composer-input"
+              type="text"
+              placeholder="Neue Aufgabe einfügen …"
+              aria-label="Neuer Eintrag"
+              form="no-history" enterkeyhint="go"
+            />
+            <div class="composer-tools">
+              <!-- Plus vor den Typ-Knöpfen: hängt Foto, Video, Audio oder Datei an den Eintrag -->
+              <button class="composer-attach" type="button" id="composer-attach" aria-label="Medien hinzufügen">
+                <svg class="icon"><use href="#icon-plus"></use></svg>
+              </button>
+              <div class="composer-types" id="composer-types"></div>
+              <div class="composer-end">
+                <!-- Diktat: spricht Text ins Eingabefeld -->
+                <button class="composer-mic" type="button" id="composer-mic" aria-label="Diktieren">
+                  <svg class="icon"><use href="#icon-mic"></use></svg>
+                </button>
+                <button class="composer-close" type="button" id="composer-close" aria-label="Schließen">
+                  <svg class="icon"><use href="#icon-plus-full"></use></svg>
+                </button>
+              </div>
+            </div>
+            <!-- eigene Dateifelder für den Anhang, damit die Medien-Seite ihre eigenen behält -->
+            <input id="composer-file-photo" type="file" accept="image/*" capture="environment" hidden />
+            <input id="composer-file-video" type="file" accept="video/*" capture="environment" hidden />
+            <input id="composer-file-audio" type="file" accept="audio/*" multiple hidden />
+            <input id="composer-file-import" type="file" multiple hidden />
+          </div>
+          </div>
+        </footer>
+
+        <!-- Fortschritt: Blatt mit XP-Verteilung, Meilensteinen, Verlauf, Stufen und Historie -->
+        <div class="modal-backdrop" id="progress" data-android-page hidden>
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="progress-title">
+            <header class="modal-head" id="progress-head">
+              <div class="modal-grip"></div><button class="modal-back" id="progress-back" type="button" aria-label="Zurück zum Fortschritt" hidden><svg class="icon"><use href="#icon-back"></use></svg></button><!-- hidden: nur auf den Meilensteinen -->
+              <h2 id="progress-title">Fortschritt</h2>
+              <button class="modal-close" id="progress-close" type="button" aria-label="Schließen">
+                <svg class="icon"><use href="#icon-close"></use></svg>
+              </button>
+            </header>
+            <div class="modal-body" id="progress-body"></div>
+          </div>
+        </div>
+
+        <!-- Einstellungen: Profilkopf, die beiden Auswertungs-Karten, Darstellung und Konto-Optionen -->
+        <div class="modal-backdrop" id="profile" data-android-page hidden>
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+            <header class="modal-head" id="profile-head">
+              <div class="modal-grip"></div>
+              <!-- hidden: der Pfeil erscheint erst, wenn eine Seite aus der Liste offen ist -->
+              <button class="modal-back" id="profile-back" type="button" aria-label="Zurück zu den Einstellungen" hidden><svg class="icon"><use href="#icon-back"></use></svg></button>
+              <h2 id="profile-title">Einstellungen</h2>
+              <button class="modal-close" id="profile-close" type="button" aria-label="Schließen">
+                <svg class="icon"><use href="#icon-close"></use></svg>
+              </button>
+            </header>
+            <div class="modal-body" id="profile-body"></div>
+            <!-- Speichern erscheint nur, solange ein neues Profilbild noch nicht übernommen ist -->
+            <div class="profile-save" id="profile-save" hidden>
+              <button class="profile-save-cancel" id="profile-photo-cancel" type="button">Abbrechen</button>
+              <button class="profile-save-ok" id="profile-photo-save" type="button">Speichern</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Große Ansicht des Profilbilds; input type=file: nur so öffnet das Handy Kamera oder Mediathek -->
+        <div class="modal-backdrop avatar-view" id="avatar-view" hidden>
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="avatar-view-title">
+            <header class="modal-head">
+              <div class="modal-grip"></div>
+              <h2 id="avatar-view-title">Profilbild</h2>
+              <button class="modal-close" id="avatar-view-close" type="button" aria-label="Schließen">
+                <svg class="icon"><use href="#icon-close"></use></svg>
+              </button>
+            </header>
+            <div class="modal-body avatar-view-body" id="avatar-view-body">
+              <div class="avatar-view-stage" id="avatar-view-stage"></div>
+            </div>
+          </div>
+        </div>
+        <input id="profile-file-photo" type="file" accept="image/*" capture="user" hidden />
+        <input id="profile-file-library" type="file" accept="image/*" hidden />
+
+        <div class="viewer-backdrop" id="media-viewer" hidden></div><!-- Dateiansicht; Inhalt entsteht erst beim Öffnen: src/features/media/viewer.js -->
+        <!-- Kleines Menü beim gedrückt Halten von Tabs und Arbeitsbereichen -->
+        <div class="ctx-backdrop" id="ctx-menu" hidden>
+          <div class="ctx-card" id="ctx-card"></div>
+        </div>
+
+        <!-- sheet: gemeinsames Auswahl-Blatt fuer Verknuepfen und Seitenmenue -->
+        <div class="sheet-backdrop" id="sheet" hidden>
+          <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+            <h2 class="sheet-title" id="sheet-title"></h2>
+            <div class="tab-pills sheet-tabs" id="sheet-tabs" role="tablist" hidden></div><!-- Pillen nur bei Blättern mit Tabs (Aufgabe) -->
+            <div class="sheet-options" id="sheet-options"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- type="module": die App ist in kleine Dateien unter src/ aufgeteilt; main.js setzt sie zusammen. -->
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

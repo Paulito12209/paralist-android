@@ -1,0 +1,243 @@
+/*
+ * Das Auswahl-Blatt von unten: „Verknüpfen mit“, „Typ wählen“, Seitenmenüs.
+ * Jede Option ist { label, icon, onSelect } plus optional active/danger/split/gap,
+ * `stay` (das Blatt bleibt nach dem Antippen offen, z.B. zum An-/Abwählen),
+ * `pair` (die Option rutscht ganz nach unten in eine Zeile neben die andere
+ * `pair`-Option — so stehen Archivieren und Löschen nebeneinander),
+ * `tile` (nur Icon, quadratisch; aufeinanderfolgende Kacheln stehen in
+ * einem Raster nebeneinander — so zeigt „Icon wählen“ viele Icons auf wenig
+ * Platz, der Name steht als Tooltip) und
+ * `heading` (keine Option, sondern eine Überschrift, die die Liste in
+ * Abschnitte teilt — „Verknüpfen mit“ trennt damit Ablageorte und Einträge).
+ * Für „Details“ gibt es zwei reine Anzeige-Zeilen: `lead` (der volle Titel,
+ * groß und ungekürzt) und `detail` (Bezeichnung oben, Wert darunter); „Typ
+ * ändern“ nutzt dazu `note` (ein Satz in normaler Schrift, z.B. was beim
+ * Umwandeln mit den verknüpften Einträgen passiert).
+ * Eine Option kann außerdem `info: { title, text }` tragen (ein ⓘ gleich
+ * rechts neben dem Namen; ein Tipp darauf öffnet src/ui/info-dialog.js und
+ * lässt das Blatt offen).
+ *
+ * Eine gewählte Option (`active`) trägt rechts einen Haken — nicht nur die
+ * Fläche, die man bei hellem Licht leicht übersieht. Mit `leadCheck` steht der
+ * Haken stattdessen links an der Stelle des Icons (die übrigen Zeilen lassen
+ * dort Platz) — so wählt man in Google Tasks die Sortierung. `count` stellt statt
+ * des Hakens eine blasse Zahl rechts hin: bei mehreren gewählten Aufgaben,
+ * wie viele davon diesen Wert schon haben.
+ *
+ * Das Blatt trägt die Klasse is-m3 und sieht aus wie ein Material-3-Blatt
+ * über die ganze Breite (styles/android-bottom-sheet.css).
+ *
+ * Mit Tabs (das Blatt einer Aufgabe): oben Icon und Name, eine Trennlinie
+ * über die ganze Breite, darunter Pillen. Antippen oder waagerecht wischen
+ * wechselt den Tab; senkrecht scrollt die Liste wie gewohnt
+ * (src/ui/pill-swipe.js unterscheidet beides). Die neue Liste gleitet aus
+ * der Richtung herein, in die man gewechselt hat.
+ * Pfad: src/ui/sheet.js
+ *
+ * Keine anpassbaren visuellen Werte: Aussehen und Abstände stehen in
+ * styles/overlays.css (Klassen .sheet, .sheet-option),
+ * styles/sheet-tabs.css (Kopf, Tabs, Haken, Hereingleiten) und
+ * styles/sheet-tiles.css (das Raster der Kacheln).
+ */
+
+import { events, on } from "../core/bus.js";
+import { dom } from "../core/dom.js";
+import { escapeHtml, icon } from "../core/html.js";
+import { closeCtxMenu } from "./ctx-menu.js";
+import { openInfoDialog } from "./info-dialog.js";
+import { bindModalPull } from "./modal-pull.js";
+import { initPillSwipe, revealActive } from "./pill-swipe.js";
+
+let actions = [];
+/* Tabs des offenen Blatts: { tabs: [{ id, label }], tab, onTab } — oder null */
+let tabbed = null;
+/* Je Option: bleibt das Blatt nach dem Antippen offen? (für An-/Abwählen) */
+let stays = [];
+/* Je Option die Erklärung hinter ihrem ⓘ — oder undefined */
+let infos = [];
+
+function optionMarkup(option, index) {
+  /* Eine Überschrift ist kein Knopf: ohne data-sheet lässt sie sich nicht
+     antippen und rutscht im Klick-Empfänger unten auch nie dazwischen. */
+  if (option.heading) return `<p class="sheet-heading">${escapeHtml(option.label)}</p>`;
+  if (option.lead) return `<p class="sheet-lead">${escapeHtml(option.label)}</p>`;
+  if (option.note) return `<p class="sheet-note">${escapeHtml(option.label)}</p>`;
+  if (option.detail) {
+    return `<div class="sheet-detail"><span class="sheet-detail-label">${escapeHtml(option.label)}</span><span class="sheet-detail-value">${escapeHtml(option.value)}</span></div>`;
+  }
+
+  if (option.tile) {
+    return `
+    <button class="sheet-tile${option.active ? " is-active" : ""}" type="button" data-sheet="${index}" title="${escapeHtml(option.label)}" aria-label="${escapeHtml(option.label)}"${option.active ? ' aria-current="true"' : ""}>
+      ${icon(option.icon)}
+    </button>`;
+  }
+
+  const classes = ["sheet-option"];
+  if (option.active) classes.push("is-active");
+  if (option.danger) classes.push("is-danger");
+  /* split: setzt eine Trennlinie über die Option; gap: lässt etwas Luft darüber */
+  if (option.split) classes.push("is-split");
+  if (option.gap) classes.push("is-gap");
+  /* pair: halbe Breite, damit zwei Optionen nebeneinander in eine Zeile passen */
+  if (option.pair) classes.push("is-pair");
+  const check = option.active && !option.pair && !option.leadCheck ? icon("check", "sheet-check") : "";
+  /* leadCheck: links der Haken (gewählt) oder eine leere Fläche gleicher Größe, damit alle Namen auf einer Linie stehen */
+  if (option.leadCheck) classes.push("is-lead-check");
+  const lead = option.leadCheck ? (option.active ? icon("check", "sheet-check-lead") : '<span class="sheet-icon-gap"></span>') : icon(option.icon);
+  const count = option.count ? `<span class="sheet-count">${option.count}</span>` : "";
+  /* Kein Knopf im Knopf: das ⓘ ist ein span, den der Klick-Empfänger unten zuerst prüft */
+  const info = option.info
+    ? `<span class="sheet-info" role="button" tabindex="0" data-sheet-info="${index}" aria-label="Was heißt „${escapeHtml(option.label)}“?">${icon("info")}</span>`
+    : "";
+  return `
+    <button class="${classes.join(" ")}" type="button" data-sheet="${index}"${option.active ? ' aria-current="true"' : ""}>
+      ${lead}
+      <span class="sheet-option-label">${escapeHtml(option.label)}${info}</span>${count}${check}
+    </button>
+  `;
+}
+
+/* Aufeinanderfolgende Kacheln in ein gemeinsames Raster packen; alles
+   andere bleibt, wie es ist. */
+function withTileGrids(options, marks) {
+  let out = "";
+  let grid = "";
+  options.forEach((option, index) => {
+    if (option.pair) return;
+    if (option.tile) {
+      grid += marks[index];
+      return;
+    }
+    if (grid) out += `<div class="sheet-tiles">${grid}</div>`;
+    grid = "";
+    out += marks[index];
+  });
+  return grid ? `${out}<div class="sheet-tiles">${grid}</div>` : out;
+}
+
+/* Erst die gewöhnlichen Optionen untereinander (Kacheln als Raster),
+   darunter die `pair`-Optionen gemeinsam in einer Zeile. */
+function sheetMarkup(options) {
+  const marks = options.map(optionMarkup);
+  const rest = withTileGrids(options, marks);
+  const paired = options.map((option, index) => (option.pair ? marks[index] : "")).join("");
+  return paired ? `${rest}<div class="sheet-pair">${paired}</div>` : rest;
+}
+
+/* Titel mit Icon davor (in der Farbe der Kategorie) oder nur als Text.
+   Ein leerer Titel blendet die Zeile ganz aus — das Blatt „Sortieren“ beginnt
+   direkt mit seiner ersten Zwischenüberschrift. */
+function renderTitle(title, titleIcon, iconColor) {
+  dom.sheetTitle.hidden = !title;
+  if (!titleIcon) {
+    dom.sheetTitle.textContent = title;
+    return;
+  }
+  const color = iconColor ? ` style="color:${iconColor}"` : "";
+  dom.sheetTitle.innerHTML = `<span class="sheet-title-icon"${color}>${icon(titleIcon)}</span><span class="sheet-title-text">${escapeHtml(title)}</span>`;
+}
+
+/* Pillen zeichnen; wechselt der Tab, gleitet die neue Liste aus der
+   Richtung herein, in der der neue Tab liegt. */
+function renderTabs(previous) {
+  const box = dom.sheet.querySelector(".sheet");
+  box.classList.toggle("has-tabs", Boolean(tabbed));
+  dom.sheetTabs.hidden = !tabbed;
+  const list = dom.sheetOptions;
+  list.classList.remove("is-slide-next", "is-slide-prev");
+  if (!tabbed) {
+    dom.sheetTabs.innerHTML = "";
+    return;
+  }
+  dom.sheetTabs.innerHTML = tabbed.tabs
+    .map((tab) => {
+      const on = tab.id === tabbed.tab;
+      return `<button class="tab-pill${on ? " is-active" : ""}" type="button" role="tab" aria-selected="${on}" data-sheet-tab="${tab.id}">${escapeHtml(tab.label)}</button>`;
+    })
+    .join("");
+  const ids = tabbed.tabs.map((tab) => tab.id);
+  const step = ids.indexOf(tabbed.tab) - ids.indexOf(previous);
+  if (previous == null || !step) return;
+  /* Einmal messen, damit die Animation neu startet, auch bei schnellem Wischen */
+  void list.offsetWidth;
+  list.classList.add(step > 0 ? "is-slide-next" : "is-slide-prev");
+  list.scrollTop = 0;
+}
+
+/**
+ * Blatt mit Titel und Optionen öffnen.
+ * extra (optional): icon und iconColor vor dem Titel; tabs, tab und onTab(id)
+ * für Pillen über der Liste — onTab öffnet das Blatt mit dem neuen Tab neu.
+ */
+export function openSheet(title, options, { icon: titleIcon, iconColor, tabs, tab, onTab } = {}) {
+  closeCtxMenu();
+  /* Nur ein Wechsel im offenen Blatt gleitet, nicht das erste Öffnen */
+  const previous = tabbed && tabs && !dom.sheet.hidden ? tabbed.tab : null;
+  tabbed = tabs ? { tabs, tab, onTab } : null;
+  renderTitle(title, titleIcon, iconColor);
+  dom.sheetOptions.innerHTML = sheetMarkup(options);
+  renderTabs(previous);
+  actions = options.map((option) => option.onSelect);
+  stays = options.map((option) => Boolean(option.stay));
+  infos = options.map((option) => option.info);
+  dom.sheet.hidden = false;
+}
+
+/** Blatt schließen. */
+export function closeSheet() {
+  dom.sheet.hidden = true;
+  tabbed = null;
+  actions = [];
+  stays = [];
+  infos = [];
+}
+
+/** Klicks im Blatt: Option ausführen, Klick daneben schließt. Ziehen schließt es auch. */
+export function initSheet() {
+  /* Das Material-3-Aussehen (styles/android-bottom-sheet.css) gilt einmal und für immer */
+  dom.sheet.classList.add("is-m3");
+  bindModalPull(dom.sheet, closeSheet);
+
+  /* Beim Wechsel der Ansicht — auch durch Browser-Zurück — schließt sich das
+     Blatt. Sonst bliebe es über der neuen Seite liegen und seine Aktionen
+     bezögen sich noch auf die verlassene. */
+  on(events.viewWillChange, closeSheet);
+
+  /* Waagerecht wischen auf dem Blatt wechselt den Tab; nur das Blatt selbst,
+     nicht der abgedunkelte Rand daneben. */
+  const box = dom.sheet.querySelector(".sheet");
+  const selectTab = (id) => {
+    if (tabbed && id !== tabbed.tab) tabbed.onTab(id);
+  };
+  initPillSwipe(box, {
+    order: () => (tabbed ? tabbed.tabs.map((tab) => tab.id) : []),
+    current: () => tabbed?.tab,
+    select: selectTab,
+    enabled: () => Boolean(tabbed),
+  });
+
+  dom.sheet.addEventListener("click", (event) => {
+    const tab = event.target.closest("[data-sheet-tab]");
+    if (tab) {
+      selectTab(tab.dataset.sheetTab);
+      revealActive(box);
+      return;
+    }
+    const info = event.target.closest("[data-sheet-info]");
+    if (info) {
+      const about = infos[Number(info.dataset.sheetInfo)];
+      if (about) openInfoDialog(about.title, about.text);
+      return;
+    }
+    const option = event.target.closest("[data-sheet]");
+    if (!option) {
+      if (event.target === dom.sheet) closeSheet();
+      return;
+    }
+    const index = Number(option.dataset.sheet);
+    const run = actions[index];
+    if (!stays[index]) closeSheet();
+    if (run) run();
+  });
+}

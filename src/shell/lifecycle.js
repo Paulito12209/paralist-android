@@ -1,0 +1,91 @@
+/*
+ * Die Ereignisse der Seite selbst: in den Hintergrund gehen, geschlossen
+ * werden. Sie stehen hier gesammelt, damit die Datenschicht keine Zuhörer auf
+ * dem Dokument anmelden muss.
+ * Außerdem meldet sie der Nutzungszeit, welcher Bereich gerade offen ist.
+ * Pfad: src/shell/lifecycle.js
+ *
+ * ANPASSBARE WERTE IN DIESER DATEI
+ * -----------------------------------
+ * usageTickSeconds -> wie oft die Nutzungszeit fortgeschrieben wird (Sekunden)
+ * afterMidnightMs  -> wie lange nach 00:00 Uhr erledigte Aufgaben von gestern
+ *                     ins Archiv wandern (Millisekunden)
+ */
+
+import { events, on } from "../core/bus.js";
+import { pauseNoHistoryForm, resumeNoHistoryForm } from "../core/no-history.js";
+import { sweepFinishedTasks } from "../data/mutations.js";
+import { findEntry } from "../data/queries.js";
+import { flushSave, ui } from "../data/state.js";
+import { usageAreaOf } from "../data/usage-areas.js";
+import { flushUsage, resetUsageTick, setUsageArea, setUsageEntry, trackUsage } from "../data/usage.js";
+import { currentView } from "../ui/views.js";
+
+const usageTickSeconds = 15;
+const afterMidnightMs = 1000;
+
+let midnightTimer = null;
+
+/*
+ * Erledigte Aufgaben wandern um Mitternacht ins Archiv (Regel in
+ * src/data/task-archive.js). Ein Zeitgeber auf den nächsten Tageswechsel
+ * genügt; im Hintergrund bremst der Browser ihn aber aus, deshalb wird beim
+ * Zurückkommen in die App zusätzlich aufgeräumt.
+ */
+function armMidnightSweep() {
+  clearTimeout(midnightTimer);
+  const now = new Date();
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  midnightTimer = setTimeout(() => {
+    sweepFinishedTasks();
+    armMidnightSweep();
+  }, next - now + afterMidnightMs);
+}
+
+/* Offene Ansicht (bei einem Eintrag: sein Typ) als Bereich der Nutzungszeit
+   melden, dazu den Eintrag selbst — für die Zeit auf seiner Seite. */
+function reportUsageArea(view) {
+  const entry = view === "entry" ? findEntry(ui.currentEntryId) : null;
+  setUsageEntry(entry ? entry.id : null);
+  setUsageArea(usageAreaOf(view, {
+    entryType: entry ? entry.type : null,
+    isWorkspace: Boolean(ui.currentPage && ui.currentPage.isWorkspace),
+  }));
+}
+
+/**
+ * Speichern und Zeitzählung an den Lebenszyklus der Seite hängen.
+ * @param hooks.onShow läuft, wenn die App wieder sichtbar wird — z.B. um nach
+ *                     einer neuen Fassung zu sehen. Kommt aus src/main.js.
+ */
+export function initLifecycle({ onShow = () => {} } = {}) {
+  reportUsageArea(currentView());
+  on(events.viewOpened, reportUsageArea);
+  setInterval(trackUsage, usageTickSeconds * 1000);
+  armMidnightSweep();
+
+  document.addEventListener("visibilitychange", () => {
+    /* Beim Verstecken alles sichern: danach kann die Seite jederzeit beendet werden. */
+    trackUsage();
+    flushUsage();
+    flushSave();
+    resetUsageTick();
+    if (document.hidden) return;
+    sweepFinishedTasks();
+    armMidnightSweep();
+    onShow();
+  });
+
+  window.addEventListener("pagehide", () => {
+    trackUsage();
+    flushUsage();
+    flushSave();
+    /* Muss hier im pagehide stehen: der Browser legt die Seite erst danach weg
+       und merkt sich dabei, welche Formulare er beim Zurückkommen leert
+       (Erklärung in src/core/no-history.js). */
+    pauseNoHistoryForm();
+  });
+
+  /* Läuft beim ersten Laden und nach jedem Zurückkommen aus dem Zurück-Speicher. */
+  window.addEventListener("pageshow", resumeNoHistoryForm);
+}

@@ -1,0 +1,393 @@
+/*
+ * Die Werte der einzelnen Seiten: Übersicht, Fortschritt, Profil, Kalender, Aufgaben,
+ * Medien, Dateiansicht, Suche, Zeichnung und Einstellungen. Alles, was auf
+ * jeder Seite wirkt — Grundfarben, Kopfzeile, Navigation, Eingabefeld,
+ * Listenzeilen und Blätter — steht in styles/tokens.css.
+ * Pfad: styles/tokens-pages.css
+ *
+ * Diese Datei ist von styles/tokens.css abgetrennt, weil dort die Grenze von
+ * 400 Zeilen erreicht war. Im Dunkeln abweichende Werte stehen weiterhin in
+ * styles/tokens-dark.css, das nach dieser Datei geladen wird.
+ *
+ * ANPASSBARE WERTE IN DIESER DATEI
+ * -----------------------------------
+ * ÜBERSICHT
+ * --overview-pager-h        -> Dicke der Linie unter den Karten, die zeigt, welche Kartenseite steht
+ * --overview-pager-w        -> Länge dieser Linie (steht rechtsbündig; die Hälfte davon ist der gefüllte Teil)
+ * --soon-opacity            -> wie blass Icon und Name einer Karte „Demnächst verfügbar“ sind
+ * --archive-link-gap        -> Luft zwischen „Zum Archiv“ (bzw. Listenende) und Karte „Ansicht“ oder Navigation
+ * --archive-link-height     -> Höhe der Pille „Zum Archiv“
+ *
+ * EINGABEFELD
+ * --composer-fill           -> Fläche von Medien-Plus und Diktat-Knopf: im Hellen der graue Grund,
+ *                              im Dunkeln die Kartenfarbe, damit beide auf der schwarzen Leiste sichtbar sind
+ *
+ * FORTSCHRITT UND PROFIL
+ * --level-color / --level-dim / --level-glow -> Level-Anzeige oben links; --level-color färbt auch Plus und Ring des Navigations-Knopfes
+ * --xp-created / --xp-done  -> Blau für „Angelegt“, Grün für „Erledigt“ (auch der Abhaken-Wischknopf)
+ * --swipe-done-mark         -> Farbe des Hakens im grünen Abhaken-Knopf hinter einer Aufgabe
+ * --xp-line                 -> Orange der Verlaufskurve im Fortschritt-Blatt
+ * --dot-empty / --dot-1..4  -> Punkte-Raster der Nutzungszeit im Profil-Blatt
+ * --profile-avatar-size     -> Größe des runden Profilbilds
+ * --profile-avatar-edit-size -> Größe des kleinen Stift-Knopfs am Profilbild
+ * --crop-size               -> Fenster zum Wählen des Profilbild-Ausschnitts
+ * --crop-shade              -> Abdunklung außerhalb des Kreises beim Zuschneiden
+ * --usage-split-band-height -> Höhe des geteilten Bands „Wo die Zeit hingeht“
+ * --usage-split-icon-size   -> Größe des runden Bereich-Icons in dieser Karte
+ * --usage-split-bar-height  -> Höhe des dünnen Anteilsbalkens je Bereich
+ * --mini-gap                -> Fuge zwischen den beiden Analyse-Kacheln
+ * --mini-card-height        -> Mindesthöhe einer Analyse-Kachel
+ * --mini-chart-height       -> Höhe der kleinen Grafik auf der Kachel
+ *
+ * NOTIZ-BAUSTEINE (Inhalt eines Eintrags, „/“-Menü)
+ * --block-gap               -> Luft zwischen zwei Zeilen/Bausteinen
+ * --block-mark-w            -> Breite der Spalte für Punkt, Zahl oder Checkbox vor einer Listenzeile
+ * --block-check-size        -> Durchmesser der runden Checkbox
+ * --block-check-color       -> Farbe, mit der sich eine abgehakte Checkbox füllt
+ * --block-rule-gap          -> Luft über und unter einer Trennlinie
+ * --embed-tile-w            -> Breite der Kachel links einer Karte (halbe Breite wie die Übersichtskarten)
+ * --embed-h                 -> Höhe dieser Kachel
+ * --embed-bar-h             -> Anteil der grauen Leiste unten in der Kachel (40% = zwei Fünftel)
+ * --embed-radius            -> Rundung der Kachel (wie die Übersichtskarten)
+ * --embed-tile-bg           -> Fläche der Kachel (wie die Übersichtskarten)
+ * --embed-bar-bg            -> Grau der Leiste mit Logo, Dienst und Menü
+ * --embed-bg                -> Fläche des Eingabefelds, solange eine Karte noch keinen Link hat
+ * --embed-tint              -> wie deckend die Logofarbe hinter dem Favicon einer Website liegt (25% = zart)
+ * --embed-gap               -> Luft über und unter einer Karte
+ *
+ * LESEZEICHEN (Sammlung hinter der Karte auf der Startseite)
+ * --bookmark-color          -> Lila der Lesezeichen: Karten-Icon, großes Icon oben, Platzhalter
+ * --bookmark-thumb          -> Kantenlänge der quadratischen Kachel links in einer Zeile
+ * --slash-bg                -> Hintergrund des „/“-Menüs
+ * --slash-tile-bg           -> Fläche einer Kachel im Menü
+ * --slash-radius            -> Rundung des Menüs
+ * --slash-max-h             -> ab dieser Höhe scrollt das Menü
+ * --block-bar-h             -> Höhe der Leiste über der Tastatur (Plus, Bausteine, Tastatur zu)
+ * --block-bar-icon          -> Größe der Icons in dieser Leiste
+ * --block-picker-h          -> Höhe der Auswahl an Stelle der Tastatur, solange die Tastatur
+ *                              noch nie offen war (sonst genau die Höhe der Tastatur)
+ *
+ * MEILENSTEINE (Seite im Fortschritt-Blatt)
+ * --ms-tasks … --ms-streak  -> Farbe der Plakette je Abzeichen (Task Master, Ehrgeizling, Dichter,
+ *                              Fotograf, Denker, Künstler, Planer, Stammgast)
+ * --ms-medal-size           -> Durchmesser der Plakette in der Liste
+ * --ms-medal-small          -> Durchmesser der kleinen Plaketten auf der Karte im Fortschritt-Blatt
+ * --ms-ring-w               -> Breite des Rings um die Plakette, der bis zur nächsten Stufe wächst
+ * --ms-bar-h                -> Höhe der Balken unter dem Namen und in der Summe
+ * --ms-locked               -> Grau einer noch gesperrten Plakette
+ * --ms-track                -> Grund von Ring und Balken, bevor sie sich füllen
+ *
+ * KALENDER
+ * --cal-now-label           -> Schriftfarbe in der Uhrzeit-Pille der Jetzt-Linie
+ * --cal-accent              -> Blau des gewählten Tages und des „Heute“-Knopfes
+ * --cal-now                 -> Farbe der Jetzt-Linie im Stundenraster
+ * --cal-ring-w              -> Breite des Rings um Tage mit Einträgen und Durchmesser der Kugel darauf
+ * --cal-ring-mix            -> wie deckend der Ring in der Eintragsfarbe ist (20% zart, 100% voll)
+ * --cal-done-mix            -> wie kräftig das Grün erledigter Murmeln im Ring ist (45% blass, 100% voll)
+ * --cal-row-h / --cal-hour-h -> Höhe einer Wochenzeile und einer Stunde
+ * --date-wheel-h / --date-wheel-item-h -> Höhe einer Rolle und einer Zeile im Blatt „Datum“ bzw. „Woche“
+ *
+ * AUFGABEN UND BOARD
+ * --prio-jetzt              -> Farbe der Board-Spalte „Jetzt“
+ * --prio-next               -> Farbe der Board-Spalte „Als Nächstes“
+ * --prio-spaeter            -> Farbe der Board-Spalte „Später“
+ * --prio-irgendwann         -> Farbe der Board-Spalte „Irgendwann“
+ * --task-meta-size          -> Schriftgröße der Nebenzeile unter einer Aufgabe
+ * --task-check-size         -> Größe des runden Haken-Knopfes an einer Aufgabe
+ * --task-crumb-gap          -> Abstand zwischen Kategorie und kleinem Pfeil oben auf einer Eintragsseite
+ * --crumb-chevron-size      -> Größe des kleinen Pfeils neben der Kategorie mitten in der Kopfzeile
+ * --task-tools-gap          -> Abstand zwischen der Pille unter dem Titel und dem ersten Abschnitt
+ * --task-section-gap        -> Luft zwischen zwei Gruppen der Aufgaben-Liste
+ * --tasks-switch-w / --tasks-switch-h -> Größe des Schalters in der Karte „Ansicht“
+ * --tasks-seg-h             -> Höhe des Segments Liste | Board in dieser Karte
+ * --tasks-panel-gap         -> Luft zwischen der ausgeklappten Karte „Ansicht“ und der Navigation
+ * --tasks-panel-slide       -> wie schnell diese Karte aus- und einklappt
+ * --board-col-width         -> Breite einer Board-Spalte
+ * --board-gap               -> Fuge zwischen zwei Spalten
+ * --board-head-gap          -> Abstand zwischen Kopfzeile und erster Zeile einer Spalte
+ * --board-grip-width        -> Breite des Griffstreifens am rechten Rand einer Zeile
+ * --board-card-radius       -> Rundung einer angehobenen Zeile und der Lücke beim Ziehen
+ * --board-head-radius       -> Rundung der farbigen Spalten-Kopfzeile
+ * --board-drop-min          -> Mindesthöhe einer leeren Spalte, damit man dort ablegen kann
+ * --board-edge              -> ab wie vielen Pixeln am Rand beim Ziehen mitgescrollt wird
+ * --board-head-tint         -> wie viel Spaltenfarbe im Streifen der Kopfzeile steckt; mehr = bunter
+ * --board-head-base         -> worin die Spaltenfarbe gemischt wird: im Hellen Weiß (Pastell), im Dunkeln
+ *                              die Kartenfarbe (styles/tokens-dark.css)
+ * --board-ink-l-max         -> höchste Helligkeit von Schrift und Icon im Streifen (0 = schwarz, 1 = weiß);
+ *                              niedriger = dunkler und besser lesbar, im Dunkeln ohne Grenze
+ * --status-open             -> Grau des Status „Offen“ (Kopfzeile im Board, Icon der Gruppe in der Liste)
+ * --select-color            -> Farbe der Auswahl: gefüllter Kreis, „Alle“, Zahl am Stapel
+ * --pick-size               -> Größe des Kreises vor einer Zeile im Auswahlmodus
+ * --select-tint             -> wie stark eine gewählte Zeile getönt ist; mehr = kräftiger
+ * --select-act-size         -> Schriftgröße der Wörter unter den Knöpfen der Auswahl-Leiste
+ *
+ * MEDIEN UND DATEIANSICHT
+ * --media-gap               -> Fuge zwischen den Medien-Kacheln
+ * --media-strip-width       -> Kantenlänge einer Kachel in der Reihe unter „Verknüpfte Einträge“ (quadratisch, 80 px)
+ * --media-strip-gap         -> Fuge zwischen diesen Kacheln
+ * --media-strip-radius      -> Rundung dieser Kacheln (0 = eckig wie überall sonst)
+ * --media-strip-bg          -> Fläche dieser Kacheln, solange kein Bild darauf liegt
+ * --media-kind-size         -> Schriftgröße der kleinen Überschriften Bilder/Videos/Audio/Dokumente
+ * --media-month-size        -> Schriftgröße der Monatsüberschrift auf der Medien-Seite
+ * --media-name-size         -> Schriftgröße des Dateinamens auf Dokument-Kacheln
+ * --media-doc-color / --media-badge-bg -> Dokument-Icon und Dauer-Schild
+ * --viewer-title-size       -> Schriftgröße des Dateinamens oben
+ * --viewer-pad              -> Abstand vom Rand um Datei und untere Leiste der Dateiansicht
+ * --viewer-foot-btn-size    -> Größe von Verknüpfen-Knopf und Drei-Punkte-Menü unten
+ * --viewer-foot-goto-h      -> Höhe des Knopfes „Zur Seite“ in der Mitte (schmaler als die Runden)
+ * --viewer-nav-size        -> Tippfläche der Blätter-Pfeile links und rechts über der Datei
+ * --viewer-nav-opacity     -> wie deutlich die Pfeile zu sehen sind (1 = voll, 0.35 = zurückhaltend)
+ * --viewer-shield-gap      -> Höhe von YouTubes Leiste im Vollbild-Video, die zum Spulen frei bleibt
+ * --media-btn-size / --media-actions-space -> Größe der runden Knöpfe über der Navigation und ihr Extra-Platz
+ * --media-actions-gap      -> Abstand zwischen diesen Knöpfen
+ *
+ * SUCHE
+ * --search-meta-size        -> Schriftgröße der kleinen Infos unter Such-Einträgen
+ * --search-pill-height / --search-pill-side / --search-actions-space / --search-combo-inset -> die Knöpfe unten auf der Suche
+ * --search-cancel-color     -> Rot der Schrift von „Abbrechen“ auf der Suche
+ * --search-fade             -> Länge des Ausblendens ab der Oberkante der Knöpfe unten auf der Suche
+ * --search-refine-height / --search-refine-size -> Höhe und Schrift der Pillen Sortieren/Filter und der Chips auf der Suche
+ * --search-dot-size / --search-dot-color -> Zahl-Blase an „Filter“ (Drittel ihrer Höhe) und Blau abweichender Pillen
+ * --search-clear-size / --search-clear-icon -> Kreis mit dem × im Suchfeld und das × darin
+ * --search-clear-bg / --search-clear-ink   -> Fläche des Kreises (helles Paralist-Silber) und Farbe des ×
+ *
+ * DETAILSEITEN (EINTRAG UND ARBEITSBEREICH)
+ * --page-cover-mix          -> wie kräftig die Kategoriefarbe ganz oben im Cover ist (im Dunkeln stärker, siehe styles/tokens-dark.css)
+ * --cover-ink-split         -> ab welcher Helligkeit der Cover-Farbe (0 = schwarz, 1 = weiß) Pfad und Knöpfe darüber
+ *                              schwarz statt weiß werden; höher = öfter weiß
+ * --cover-ink-muted         -> wie deckend die blassen Teile (Pfad, Trennzeichen) über dem Cover sind
+ * --accent-l-min / --accent-l-max -> Helligkeitsbereich, in den das eigene Icon ohne Cover gerückt wird, damit es
+ *                              sich vom Grund abhebt (im Hellen nach oben begrenzt, im Dunkeln nach unten, styles/tokens-dark.css)
+ * --entry-icon-glyph        -> Größe des eigenen Icons über dem Titel eines Eintrags
+ * --entry-icon-gap          -> Luft zwischen diesem Icon und dem Titel
+ * --details-gap             -> Luft zwischen dem Text eines Eintrags und der Karte „Details“ darunter
+ * --details-head-h          -> Höhe des Kopfs dieser Karte — so viel schaut beim Öffnen über der Navigation hervor
+ * --entry-fold-fade         -> wie lang gekürzter Text nach unten ausläuft, bevor „Mehr anzeigen“ kommt
+ *
+ * ZEICHNUNG
+ * --draw-tool-size / --draw-color-size -> Größe der Werkzeug-Knöpfe und Farbpunkte
+ * --draw-tools-gap          -> Abstand der Werkzeugleiste zur Zeichenfläche darüber und zur Karte „Details“ darunter
+ *
+ * VIDEOPLAYER IM EINTRAG
+ * --video-bg / --video-glass -> Grund des Blocks, Fläche der Tempo-Pille und der runden Knöpfe rechts
+ * --video-bar-h / --video-speed-size -> Leiste zwischen Bild und Titel, Höhe der Tempo-Stufen und der runden Knöpfe
+ * --video-inset / --video-title-size -> Abstand von Leiste und Titel zum Rand, Schriftgröße des Titels
+ *
+ * FENSTER „NEUE VERSION VERFÜGBAR“ (styles/update.css)
+ * --update-bg               -> Fläche des Fensters „Neue Version verfügbar“ (im Dunkeln eigener Wert)
+ * --update-radius           -> Rundung dieses Fensters (Material 3: 28dp)
+ * --update-width            -> größte Breite des Fensters; schmaler, wenn das Gerät schmaler ist
+ * --update-pad              -> Innenabstand des Fensters
+ * --update-btn-height       -> Höhe der beiden Knöpfe (48 = Mindest-Tippziel von Material 3)
+ * --update-anim             -> wie lange das Fenster beim Auftauchen braucht
+ *
+ * EINSTELLUNGEN UND FEEDBACK
+ * --support-field-radius     -> Rundung der Felder und Art-Knöpfe im Feedback
+ * --support-text-min-height  -> Mindesthöhe des Beschreibungsfelds im Feedback
+ * --support-choice-active-bg -> Fläche der gewählten Art im Feedback
+ * --credits-chip-bg          -> Fläche hinter einem Namen bei den Danksagungen
+ * --account-copy-size        -> Tippfläche des Kopier-Knopfs unter „Persönliche Daten“
+ */
+
+:root {
+  /* Übersicht: zweite Kartenseite, abgeschaltete Karten, Pille „Zum Archiv“ */
+  --overview-pager-h: 3px;
+  --overview-pager-w: 48px;
+  --soon-opacity: 0.45;
+  --archive-link-gap: 8px;
+  --archive-link-height: 36px;
+
+  /* Eingabefeld: Fläche der runden Knöpfe unten */
+  --composer-fill: var(--bg);
+
+  /* Fortschritt und Profil: Level-Anzeige, Verlaufskurve und Punkte-Raster */
+  --level-color: #4d72ad;
+  --level-dim: rgba(77, 114, 173, 0.22);
+  --level-glow: transparent;
+  --xp-created: #007aff;
+  --xp-done: #34c759;
+  --swipe-done-mark: #ffffff;
+  --xp-line: #ff9500;
+  --dot-empty: rgba(60, 60, 67, 0.09);
+  --dot-1: rgba(255, 149, 0, 0.3);
+  --dot-2: rgba(255, 149, 0, 0.5);
+  --dot-3: rgba(255, 149, 0, 0.75);
+  --dot-4: #ff9500;
+  --profile-avatar-size: 128px;
+  --profile-avatar-edit-size: 36px;
+  --crop-size: 300px;
+  --crop-shade: rgba(0, 0, 0, 0.6);
+  --usage-split-band-height: 12px;
+  --usage-split-icon-size: 34px;
+  --usage-split-bar-height: 4px;
+  --mini-gap: 12px;
+  --mini-card-height: 132px;
+  --mini-chart-height: 34px;
+
+  /* Notiz-Bausteine: Listen, Checkboxen, Karten und das „/“-Menü.
+     color-mix mit --text: passt sich ohne eigene Dunkel-Werte an Hell und Dunkel an */
+  --block-gap: 2px;
+  --block-mark-w: 26px;
+  --block-check-size: 20px;
+  --block-check-color: #007aff;
+  --block-rule-gap: 12px;
+  --embed-tile-w: calc(50% - 6px);
+  --embed-h: 124px;
+  --embed-bar-h: 40%;
+  --embed-radius: var(--radius-lg);
+  --embed-tile-bg: var(--overview-card-bg);
+  --embed-bar-bg: color-mix(in srgb, var(--text) 9%, var(--overview-card-bg));
+  --embed-bg: color-mix(in srgb, var(--text) 6%, transparent);
+  --embed-tint: 25%;
+  --embed-gap: 6px;
+  --bookmark-color: #af52de;
+  --bookmark-thumb: 88px;
+  --slash-bg: var(--update-bg);
+  --slash-tile-bg: color-mix(in srgb, var(--text) 6%, transparent);
+  --slash-radius: 20px;
+  --slash-max-h: 320px;
+  --block-bar-h: 48px;
+  --block-bar-icon: 22px;
+  --block-picker-h: 320px;
+
+  /* Meilensteine: Farben der Abzeichen, Plaketten, Ring und Balken */
+  --ms-tasks: #34c759;
+  --ms-projects: #ff375f;
+  --ms-writing: #ff9500;
+  --ms-photos: #32ade6;
+  --ms-notes: #e6b800;
+  --ms-drawings: #af52de;
+  --ms-events: #007aff;
+  --ms-streak: #ff6b1a;
+  --ms-medal-size: 58px;
+  --ms-medal-small: 30px;
+  --ms-ring-w: 4px;
+  --ms-bar-h: 6px;
+  --ms-locked: #aeaeb2;
+  --ms-track: rgba(60, 60, 67, 0.12);
+
+  /* Kalender: Farben des gewählten Tages, Jetzt-Linie und Höhen der Raster */
+  --cal-now-label: #0b1a2a;
+  --cal-accent: #007aff;
+  --cal-now: #32ade6;
+  --cal-ring-w: 8px;
+  --cal-ring-mix: 20%;
+  --cal-done-mix: 45%;
+  --cal-row-h: 52px;
+  --cal-hour-h: 56px;
+  --date-wheel-h: 220px;
+  --date-wheel-item-h: 44px;
+
+  /* Aufgaben: Farben der vier Abschnitte, Pille, Abschnitte und Spaltenmaße */
+  --prio-jetzt: #ff453a;
+  --prio-next: #ff9500;
+  --prio-spaeter: #007aff;
+  --prio-irgendwann: #af52de;
+  --task-meta-size: 13px;
+  --task-check-size: 24px;
+  --task-crumb-gap: 5px;
+  --crumb-chevron-size: 10px;
+  --task-tools-gap: 22px;
+  --task-section-gap: 28px;
+  --tasks-switch-w: 46px;
+  --tasks-switch-h: 28px;
+  --tasks-seg-h: 32px;
+  --tasks-panel-gap: 12px;
+  --tasks-panel-slide: 0.32s;
+  --board-col-width: 264px;
+  --board-gap: 12px;
+  --board-head-gap: 6px;
+  --board-grip-width: 32px;
+  --board-card-radius: 16px;
+  --board-head-radius: 14px;
+  --board-drop-min: 72px;
+  --board-edge: 44px;
+  --select-color: var(--link-color);
+  --pick-size: 22px;
+  --select-tint: 10%;
+  --select-act-size: 11px;
+  --board-head-tint: 22%;
+  --board-head-base: #ffffff;
+  --board-ink-l-max: 0.5;
+  --status-open: #5c5c61;
+
+  /* Medien und Dateiansicht: Kacheln, Schilder und die Knöpfe über der Navigation */
+  --media-gap: 3px;
+  --media-strip-width: 80px;
+  --media-strip-gap: 10px;
+  --media-strip-radius: 0;
+  --media-strip-bg: rgba(60, 60, 67, 0.09);
+  --media-kind-size: 13px;
+  --media-month-size: 19px;
+  --media-name-size: 13px;
+  --media-doc-color: #007aff;
+  --media-badge-bg: rgba(0, 0, 0, 0.55);
+  --viewer-title-size: 17px;
+  --viewer-pad: 12px;
+  --viewer-foot-btn-size: 44px;
+  --viewer-foot-goto-h: 36px;
+  --viewer-nav-size: 40px;
+  --viewer-nav-opacity: 0.4;
+  --viewer-shield-gap: 48px;
+  --media-btn-size: 48px;
+  --media-actions-space: 60px;
+  --media-actions-gap: 12px;
+
+  /* Suche: Zeilen und die drei Knöpfe unten */
+  --search-meta-size: 13px;
+  --search-pill-height: 56px;
+  --search-pill-side: 20px;
+  --search-combo-inset: 4px;
+  --search-cancel-color: #ff2323; /* reines Rot; kräftiger als --danger, das einen Stich ins Orange hat */
+  --search-actions-space: 60px;
+  --search-fade: 20px; /* ab der Oberkante der Knöpfe: nach so vielen Pixeln ist die Liste ganz verdeckt */
+  --search-refine-height: 30px;
+  --search-refine-size: 13px;
+  --search-dot-size: 6px;
+  --search-dot-color: var(--link-color);
+  --search-clear-size: 20px;
+  --search-clear-icon: 12px;
+  --search-clear-bg: color-mix(in srgb, var(--avatar-btn-bg) 90%, var(--card)); /* etwas ins Kartengrau gemischt, damit der Kreis nicht grell wirkt */
+  --search-clear-ink: var(--card);
+
+  /* Zeichnung: Werkzeug-Knöpfe und Farbpunkte */
+  --draw-tool-size: 38px;
+  --draw-color-size: 22px;
+  --draw-tools-gap: 12px;
+
+  /* Videoplayer: immer dunkel, Tempo-Pille aus Milchglas */
+  --video-bg: #141414;
+  --video-glass: rgba(255, 255, 255, 0.18);
+  --video-bar-h: 44px;
+  --video-speed-size: 36px;
+  --video-inset: 14px;
+  --video-title-size: 26px;
+
+  /* Detailseiten: Cover; Eintrag: Icon über dem Titel */
+  --page-cover-mix: 60%;
+  --cover-ink-split: 0.6;
+  --cover-ink-muted: 84%;
+  --accent-l-min: 0;
+  --accent-l-max: 0.62;
+  --entry-icon-glyph: 40px;
+  --entry-icon-gap: 10px;
+  /* Eintrag: Karte „Details“ am Ende von „Inhalt“ und gekürzter Text darüber */
+  --details-gap: 28px;
+  --details-head-h: 48px;
+  --entry-fold-fade: 64px;
+
+  /* Fenster „Neue Version verfügbar“ */
+  --update-bg: #ffffff;
+  --update-radius: 28px;
+  --update-width: 320px;
+  --update-pad: 24px;
+  --update-btn-height: 48px;
+  --update-anim: 0.22s;
+
+  /* Einstellungen und Feedback: Felder, gewählte Art und Danksagungen */
+  --support-field-radius: 14px;
+  --support-text-min-height: 140px;
+  --support-choice-active-bg: rgba(0, 122, 255, 0.1);
+  --credits-chip-bg: rgba(60, 60, 67, 0.07);
+  --account-copy-size: 36px;
+}

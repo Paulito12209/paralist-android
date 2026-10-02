@@ -1,0 +1,398 @@
+/*
+ * Alles, was sich über die Seite legt: das Auswahl-Blatt von unten, das kleine
+ * Menü beim gedrückt Halten und die Blätter für Fortschritt, Profil und
+ * Profilbild.
+ * Pfad: styles/overlays.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --ctx-radius              -> Rundung des kleinen Menüs
+ * --sheet-options-max       -> ab welcher Höhe die Liste im Blatt scrollt
+ * --sheet-heading-size      -> Schriftgröße der Abschnitts-Überschrift
+ * --modal-radius            -> Rundung der oberen Kante der Blätter
+ * --composer-radius         -> Rundung des Auswahl-Blatts
+ * --bg                      -> Fläche des Auswahl-Blatts (wie eine Seite)
+ * --card                    -> gewählte und gedrückte Option im Blatt (Silber), sonst Flächen
+ * --line / --danger         -> Trennlinien und rote Einträge
+ * --modal-dismiss-pull      -> wie weit man ziehen muss, damit ein Blatt schließt
+ * --card                    -> auch die Fläche der beiden Knöpfe unten nebeneinander (.sheet-pair)
+ * --modal-dim               -> wird beim Ziehen von src/ui/modal-pull.js gesetzt
+ * --head-btn-size / --head-icon-size / --page-head-pull -> Zurück-Pfeil im Blatt, gleich wie auf jeder Seite
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+*/
+
+/* Auswahl-Blatt für Verknüpfen und Seitenmenü */
+.sheet-backdrop {
+  position: absolute; /* position: legt das Blatt über die ganze Gerätefläche */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50; /* z-index: liegt über Navigation und großen Blättern, damit die Auswahl sichtbar bleibt */
+  background: rgba(0, 0, 0, calc(0.28 * var(--modal-dim, 1)));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 12px;
+}
+
+.sheet-backdrop[hidden] {
+  display: none;
+}
+
+/* Das Blatt hat die Farbe einer Seite (fast weiß), eine gewählte oder
+   gedrückte Option das Silber der Karten — wie eine aktive Pille auf der Seite. */
+.sheet {
+  background: var(--bg);
+  border-radius: var(--composer-radius); /* border-radius: rundet das Blatt wie die übrigen Karten */
+  padding: 8px;
+  padding-bottom: calc(8px + var(--safe-bottom));
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.sheet-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 10px 12px 6px;
+}
+
+.sheet-options {
+  display: flex;
+  flex-direction: column;
+  /* „Verknüpfen mit“ kann jeden Eintrag der App anbieten. Ohne diese Grenze
+     wüchse das Blatt oben aus dem Bild heraus und die unteren Einträge wären
+     nicht mehr erreichbar. */
+  max-height: var(--sheet-options-max);
+  overflow-y: auto; /* overflow-y: die Liste scrollt in sich, das Blatt bleibt stehen */
+  overscroll-behavior: contain; /* overscroll-behavior: am Ende der Liste scrollt nicht die Seite dahinter mit */
+}
+
+/* Überschrift eines Abschnitts im Blatt — teilt „Verknüpfen mit“ in Ablageorte und Einträge */
+.sheet-heading {
+  padding: 12px 12px 4px;
+  color: var(--muted);
+  font-size: var(--sheet-heading-size);
+  font-weight: 600;
+  text-transform: uppercase; /* text-transform: hebt die Überschrift von den Optionen ab, ohne sie größer zu machen */
+  letter-spacing: 0.04em; /* letter-spacing: Großbuchstaben brauchen etwas mehr Luft, sonst kleben sie */
+}
+
+.sheet-heading:first-child {
+  padding-top: 4px;
+}
+
+.sheet-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  border-radius: var(--radius-lg); /* border-radius: rundet die Zeile beim Antippen */
+  text-align: left;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.sheet-option .icon {
+  width: 20px;
+  height: 20px;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.sheet-option.is-active {
+  background: var(--card);
+}
+
+.sheet-option.is-danger,
+.sheet-option.is-danger .icon {
+  color: var(--danger);
+}
+
+/* Trennlinie vor Dokument/Zeichnung bzw. „Icon entfernen“: eine gerade Linie
+   in der Lücke über der Option. Kein border-top — die Option ist abgerundet,
+   und ein Rand dort bog sich an beiden Enden mit nach unten. */
+.sheet-option.is-split {
+  position: relative; /* position: Anker für die Linie darüber */
+  margin-top: 9px;
+}
+
+.sheet-option.is-split::before {
+  content: "";
+  position: absolute; /* position: sitzt mittig in der Lücke, außerhalb der Rundung */
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--line);
+}
+
+.sheet-option.is-gap {
+  margin-top: 8px; /* Abstand zwischen Aufgabe/Notiz, Termin und Projekte */
+}
+
+/* Die beiden letzten Optionen eines Menüs stehen nebeneinander in einer Zeile:
+   in der Dateiansicht sind das Archivieren und Löschen. */
+.sheet-pair {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line); /* border-top: trennt die Zeile von den Optionen darüber */
+}
+
+/* Jede der beiden Hälften: Icon über dem Wort, zusammen halbe Breite */
+.sheet-option.is-pair {
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 72px;
+  background: var(--card);
+  font-size: 15px;
+  text-align: center;
+}
+
+.sheet-option.is-pair:active {
+  opacity: 0.6;
+}
+
+.sheet-option:active {
+  background: var(--card);
+}
+
+/* Unsichtbare Fläche über dem Gerät, damit ein Tipp neben dem Menü es schließt */
+.ctx-backdrop {
+  position: absolute; /* position: liegt über der ganzen Gerätefläche */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 36; /* z-index: über der Navigation, unter dem Auswahl-Blatt */
+  background: transparent;
+}
+
+.ctx-backdrop[hidden] {
+  display: none;
+}
+
+/* Kleines weißes Menü wie beim gedrückt Halten eines Tabs */
+.ctx-card {
+  position: absolute; /* position: klebt am gedrückten Tab oder der Zeile */
+  min-width: 220px;
+  background: var(--card);
+  border-radius: var(--ctx-radius); /* border-radius: rundet das Menü */
+  padding: 6px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+}
+
+.ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 12px; /* border-radius: rundet die Zeile beim Antippen */
+  text-align: left;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.ctx-item .icon {
+  width: 20px;
+  height: 20px;
+  color: var(--text);
+  flex: 0 0 auto;
+}
+
+.ctx-item.is-danger,
+.ctx-item.is-danger .icon {
+  color: var(--danger);
+}
+
+/* Platz für den Haken in einem Auswahl-Menü — bleibt auch bei den nicht
+   gewählten Zeilen frei, damit die Texte untereinander stehen */
+.ctx-check {
+  width: 18px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+}
+
+.ctx-check .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.ctx-item:active {
+  background: var(--bg);
+}
+
+/* ---------- Fortschritt-Blatt ---------- */
+
+.modal-backdrop {
+  position: absolute; /* position: liegt über der ganzen Gerätefläche */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 44; /* z-index: über Navigation, unter dem Auswahl-Blatt */
+  /* --modal-dim: wird beim Nach-unten-Ziehen kleiner, damit der Hintergrund mit ausblendet */
+  background: rgba(0, 0, 0, calc(0.4 * var(--modal-dim, 1)));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.modal-backdrop[hidden] {
+  display: none;
+}
+
+.modal {
+  position: relative; /* position: der Pfeil nach oben hängt unten rechts im Blatt */
+  height: calc(100% - 24px - var(--safe-top));
+  background: var(--bg);
+  /* border-radius: rundet nur die obere Kante des Blatts */
+  border-radius: var(--modal-radius) var(--modal-radius) 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.3);
+  animation: modal-up 0.28s ease; /* animation: Blatt fährt von unten herein */
+}
+
+@keyframes modal-up {
+  from {
+    transform: translateY(48px);
+    opacity: 0.4;
+  }
+}
+
+.modal-head {
+  position: relative; /* position: der Schließen-Knopf hängt rechts im Kopf */
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 26px 16px 14px;
+  /* touch-action: der Kopf scrollt nicht mit, sondern zieht das Blatt nach unten */
+  touch-action: none;
+}
+
+.modal-grip {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--chevron);
+  transform: translateX(-50%); /* transform: zentriert den Griff */
+}
+
+/*
+ * Nur auf einer Unterseite: Pfeil und „Einstellungen“ rücken zusammen nach
+ * links. Beides gehört zusammen und heißt „zurück zu den Einstellungen“ —
+ * mittig gelesen wäre es der Name der Seite, auf der man steht, und den sagt
+ * dort die Überschrift über dem Inhalt.
+ */
+.modal-head.is-back {
+  justify-content: flex-start;
+  gap: 2px;
+}
+
+.modal-head h2 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.modal-back {
+  width: var(--head-btn-size);
+  height: var(--head-btn-size);
+  margin-left: calc(-1 * var(--page-head-pull)); /* margin-left: Pfeilspitze bündig mit dem Inhalt, wie auf jeder Seite */
+  margin-block: calc((var(--head-icon-size) - var(--head-btn-size)) / 2); /* margin-block: große Tippfläche, ohne dass der Kopf höher wird */
+  border-radius: 50%; /* border-radius: rundet die Tippfläche des Pfeils */
+  display: grid;
+  place-items: center;
+  color: var(--text);
+}
+
+/* Ohne diese Zeile würde display: grid oben das hidden-Attribut überstimmen */
+.modal-back[hidden] {
+  display: none;
+}
+
+.modal-back .icon {
+  width: var(--head-icon-size);
+  height: var(--head-icon-size);
+}
+
+.modal-back:active {
+  background: var(--tab-pill-active-bg);
+}
+
+.modal-close {
+  position: absolute;
+  right: 12px;
+  top: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%; /* border-radius: macht den Schließen-Knopf rund */
+  background: var(--tab-pill-active-bg);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+}
+
+.modal-close .icon {
+  width: 22px;
+  height: 22px;
+}
+
+.modal-close:active {
+  opacity: 0.6;
+}
+
+.modal-body {
+  flex: 1;
+  overflow: auto;
+  padding: 4px var(--content-side) calc(24px + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scrollbar-width: none;
+  /* overscroll-behavior: verhindert das Mitziehen der Seite, damit das Blatt selbst schließt */
+  overscroll-behavior: none;
+}
+
+.modal-body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Dunkelmodus: Overlay-Schatten invertieren (weiß statt schwarz) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sheet {
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.12);
+  }
+  :root:not([data-theme="light"]) .ctx-card {
+    box-shadow: 0 0 28px rgba(255, 255, 255, 0.1);
+  }
+  :root:not([data-theme="light"]) .modal {
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+  }
+}
+:root[data-theme="dark"] .sheet {
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.12);
+}
+:root[data-theme="dark"] .ctx-card {
+  box-shadow: 0 0 28px rgba(255, 255, 255, 0.1);
+}
+:root[data-theme="dark"] .modal {
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+}

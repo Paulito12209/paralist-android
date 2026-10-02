@@ -1,0 +1,369 @@
+/*
+ * Dateiansicht: Foto, Video, Aufnahme und PDF bildschirmfüllend, mit Namen und
+ * Teilen-Knopf in der Kopfzeile. Dahinter liegt derselbe Grund mit demselben
+ * Verlauf wie überall in der App. Unten stehen Verknüpfen, „Zur Seite“ und das
+ * Drei-Punkte-Menü nur als Icons ohne eigene Fläche — sie nehmen eigenen Platz
+ * ein, statt sich über das Bild oder ein Hochkant-Video zu legen. Gezoomt wird
+ * nur die Datei (src/features/media/viewer-zoom.js): Kopf und Leiste bleiben
+ * immer stehen — auch beim YouTube-Video im Vollbild.
+ * Pfad: styles/viewer.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --bg                  -> Grund hinter Bild, Video und PDF (wie auf jeder Seite)
+ * --nav-glow-color / --nav-glow-height -> Farbe und Höhe des Verlaufs von unten, derselbe wie hinter der Navigation
+ *                          (Werte und Form: styles/navigation.css)
+ * --head-btn-size      -> Tippfläche von Zurück und Teilen (gleich wie auf jeder Seite)
+ * --head-icon-size     -> Größe von Zurück-Pfeil und Teilen-Icon (gleich wie auf jeder Seite)
+ * --head-edge          -> Abstand der beiden Knöpfe zum Bildschirmrand
+ * --page-head-top      -> Luft über und unter den Knöpfen (wie über dem Pfeil einer Seite)
+ * --viewer-title-size   -> Schriftgröße des Namens oben
+ * --viewer-pad          -> Abstand vom Rand um Datei und untere Leiste
+ * --viewer-foot-btn-size -> Größe von Verknüpfen-Knopf und Drei-Punkte-Menü unten
+ * --viewer-foot-goto-h  -> Höhe des Knopfes „Zur Seite“ in der Mitte
+ * --viewer-nav-size    -> Tippfläche der Blätter-Pfeile links und rechts
+ * --viewer-nav-opacity -> wie deutlich die Blätter-Pfeile zu sehen sind
+ * --text / --muted     -> Schrift und Icons oben wie unten, Hinweise
+ * --tab-pill-active-bg  -> Fläche, die beim Drücken eines Knopfes kurz erscheint
+ * --viewer-shield-gap   -> Höhe von YouTubes Leiste unten im Video, die für Spulen und Ton frei bleibt
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+*/
+
+.viewer-backdrop {
+  position: absolute; /* position: liegt über der ganzen Gerätefläche */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 46; /* z-index: über der Navigation, unter dem Auswahl-Blatt (z-index 50) */
+}
+
+.viewer-backdrop[hidden] {
+  display: none;
+}
+
+.viewer {
+  height: 100%;
+  background: var(--bg);
+  position: relative; /* position: Bezugsrahmen für den Verlauf unten */
+  isolation: isolate; /* isolation: eigene Ebene, damit der Verlauf mit z-index -1 hinter Kopf, Datei und Knöpfen bleibt, aber über dem Grund */
+  display: flex;
+  flex-direction: column;
+  animation: viewer-in 0.2s ease; /* animation: die Datei blendet kurz auf, statt zu springen */
+  touch-action: none; /* touch-action: Finger zoomen nur die Datei (viewer-zoom.js), nie die ganze Seite mit Kopf und Leiste */
+}
+
+@keyframes viewer-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Der Verlauf selbst kommt aus styles/navigation.css (gemeinsame Regel mit
+   .device::before); hier liegt er nur hinter statt über dem Inhalt. */
+.viewer::before {
+  z-index: -1; /* z-index: hinter Bild und Knöpfen, damit die Datei unverfälscht bleibt */
+}
+
+/* ---------- Kopfzeile ---------- */
+
+/* Zurück-Pfeil, Name und Teilen in einer Zeile. Pfeil und Teilen stehen genau
+   dort, wo auf jeder Seite Zurück und das Drei-Punkte-Menü stehen: gleiche
+   Knöpfe, gleicher Abstand zum Rand und zur Statusleiste. */
+.viewer-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: calc(var(--page-head-top) + var(--safe-top)) var(--head-edge) var(--page-head-top);
+}
+
+/* Der Name ist zugleich das Feld zum Umbenennen: einfach hineintippen */
+.viewer-title {
+  flex: 1;
+  min-width: 0; /* min-width: sonst drückt ein langer Name die Knöpfe aus dem Bild */
+  font-size: var(--viewer-title-size);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 10px; /* border-radius: rundet die Fläche, solange man tippt */
+}
+
+.viewer-title:focus {
+  background: var(--bg);
+  outline: none;
+}
+
+.viewer-title::placeholder {
+  color: var(--placeholder);
+}
+
+.viewer-btn {
+  width: var(--head-btn-size);
+  height: var(--head-btn-size);
+  flex: 0 0 auto;
+  border-radius: 50%; /* border-radius: macht die Tippfläche rund */
+  display: grid;
+  place-items: center;
+  color: var(--text);
+}
+
+.viewer-btn .icon {
+  width: var(--head-icon-size);
+  height: var(--head-icon-size);
+}
+
+.viewer-btn:active {
+  background: var(--tab-pill-active-bg);
+}
+
+/* ---------- Fußleiste: Verknüpfen, Zur Seite, Drei-Punkte-Menü ---------- */
+
+/* Eigener Bereich statt Überlagerung: so bleibt bei einem Hochkant-Video oder
+   -Bild die ganze Datei sichtbar. Keine Fläche: die Icons stehen direkt auf dem
+   Verlauf und heben sich allein durch ihre Farbe ab. */
+.viewer-foot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px var(--viewer-pad) calc(10px + var(--safe-bottom));
+}
+
+.viewer-foot-btn {
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.viewer-foot-btn .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Links und rechts: Verknüpfen und die drei Punkte, nur als runde Icon-Knöpfe */
+.viewer-foot-icon {
+  width: var(--viewer-foot-btn-size);
+  height: var(--viewer-foot-btn-size);
+  flex: 0 0 auto;
+  border-radius: 50%; /* border-radius: rundet die Fläche, die beim Drücken erscheint */
+}
+
+.viewer-foot-btn:active {
+  background: var(--tab-pill-active-bg);
+}
+
+/* Mitte: „Zur Seite“ — Icon und Wort, absichtlich niedriger als die runden Knöpfe */
+.viewer-foot-goto {
+  height: var(--viewer-foot-goto-h);
+  padding: 0 16px;
+  border-radius: 999px; /* border-radius: Pillenform der Fläche beim Drücken */
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Die Datei selbst ---------- */
+
+/* Rahmen um Datei und Blätter-Pfeile: die Pfeile richten sich an seiner Mitte aus */
+.viewer-main {
+  flex: 1;
+  min-height: 0; /* min-height: erst damit darf die Datei darin schrumpfen */
+  position: relative; /* position: Bezugsrahmen für die beiden Pfeile */
+  overflow: hidden; /* overflow: die vergrößerte Datei bleibt in ihrem Rahmen und legt sich nie über Kopf oder Leiste */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Blätter-Pfeile: nur ein halb durchsichtiges Zeichen ohne Fläche, damit sie
+   dem Bild möglichst wenig Aufmerksamkeit nehmen. */
+.viewer-nav {
+  position: absolute; /* position: liegt über dem Bildrand, ohne es zu verkleinern */
+  top: 50%;
+  transform: translateY(-50%); /* transform: genau auf halber Höhe der Datei */
+  width: var(--viewer-nav-size);
+  height: var(--viewer-nav-size);
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  opacity: var(--viewer-nav-opacity);
+  border-radius: 50%; /* border-radius: rundet die Fläche beim Drücken */
+}
+
+.viewer-nav[hidden] {
+  display: none;
+}
+
+.viewer-nav .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.viewer-nav:active {
+  background: var(--tab-pill-active-bg);
+}
+
+.viewer-nav-prev {
+  left: 0;
+}
+
+.viewer-nav-prev .icon {
+  transform: scaleX(-1); /* transform: derselbe Pfeil wie rechts, nur gespiegelt */
+}
+
+.viewer-nav-next {
+  right: 0;
+}
+
+.viewer-stage {
+  flex: 1;
+  min-height: 0; /* min-height: erst damit darf ein großes Bild schrumpfen statt überzulaufen */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: var(--viewer-pad);
+  padding-bottom: calc(var(--viewer-pad) + var(--safe-bottom));
+  overflow: auto;
+  transform-origin: 0 0; /* transform-origin: viewer-zoom.js rechnet von der linken oberen Ecke aus */
+}
+
+/* Bild und Video bleiben ganz im Bild, statt beschnitten zu werden */
+.viewer-img,
+.viewer-video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* object-fit: die ganze Datei ist zu sehen, nichts wird abgeschnitten */
+}
+
+.viewer-video {
+  width: 100%;
+}
+
+/* YouTube-Video aus dem Player einer Karte: so breit wie die Fläche, in
+   seinem Seitenverhältnis (--video-ratio setzt src/features/media/viewer-stage.js),
+   höchstens so hoch wie die Fläche */
+.viewer-embed {
+  width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1 / var(--video-ratio); /* aspect-ratio: Breite zu Höhe aus dem gemeldeten Verhältnis */
+  position: relative; /* position: Bezugsrahmen für Player und die Fläche darüber */
+  background: #000000;
+}
+
+/* iframe: der Player, den YouTube anstelle von .viewer-embed-host einsetzt */
+.viewer-embed iframe {
+  position: absolute; /* position: füllt den Rahmen ganz aus */
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Durchsichtige Fläche über dem Bild: Zoomen und Tippen landen bei der App.
+   Unten bleibt YouTubes Leiste (Spulen, Ton) frei bedienbar. */
+.viewer-shield {
+  position: absolute; /* position: liegt genau über dem Bild des Players */
+  inset: 0 0 var(--viewer-shield-gap);
+}
+
+.viewer-shield[hidden] {
+  display: none;
+}
+
+.viewer-foot[hidden],
+.viewer-btn[hidden] {
+  display: none;
+}
+
+/* PDF: das eingebettete Fenster füllt die ganze Fläche */
+.viewer-pdf {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: var(--radius-lg); /* border-radius: passt zu den Karten der App */
+  background: var(--card);
+}
+
+/* Karte für Aufnahmen und Dateien ohne eigene Vorschau */
+.viewer-player {
+  width: 100%;
+  max-width: 320px;
+  background: var(--card);
+  border-radius: var(--radius-xl); /* border-radius: wie die übrigen Karten */
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.viewer-player-icon .icon {
+  width: 38px;
+  height: 38px;
+  color: var(--text);
+}
+
+.viewer-player-name {
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  overflow-wrap: anywhere; /* overflow-wrap: lange Dateinamen ohne Leerzeichen dürfen umbrechen */
+}
+
+/* Die Bedienleiste des Browsers für Ton */
+.viewer-audio {
+  width: 100%;
+}
+
+/* Knopf, wenn sich eine Datei nur herunterladen lässt (z.B. ein Word-Dokument) */
+.viewer-open {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  padding: 10px 18px;
+  border-radius: 999px; /* border-radius: Pillenform des Knopfes */
+  background: var(--bg);
+}
+
+/* Icon und Hinweis, wenn die Datei nicht in diesem Browser liegt */
+.viewer-missing-icon .icon {
+  width: 44px;
+  height: 44px;
+  color: var(--muted);
+}
+
+.viewer-note {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  max-width: 280px;
+}
+
+/* Kurze Rückmeldung nach dem Teilen, unten über der Datei */
+.viewer-hint {
+  position: absolute; /* position: legt sich über die Datei, ohne sie zu verschieben */
+  left: var(--viewer-pad);
+  right: var(--viewer-pad);
+  bottom: calc(var(--viewer-pad) + var(--safe-bottom));
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  color: var(--text);
+  text-align: center;
+  pointer-events: none; /* pointer-events: der Hinweis liegt über der Leiste unten — Tipps gehen durch zu den Knöpfen */
+}
+
+.viewer-hint[hidden] {
+  display: none;
+}

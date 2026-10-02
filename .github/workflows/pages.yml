@@ -1,0 +1,52 @@
+# Veröffentlicht die App bei jedem Push auf main über GitHub Pages:
+# https://paulito12209.github.io/paralist-android/
+#
+# Es gibt keinen Build-Schritt. Der Lauf schreibt nur den Versionsstempel
+# (tools/version.py) frisch, damit eine offene App das Update bemerkt, prüft
+# die Projektregeln (tools/check.py) und lädt dann die Dateien hoch, die der
+# Browser braucht.
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Nur ein Lauf gleichzeitig; ein neuer Push ersetzt einen wartenden.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versionsstempel schreiben
+        run: python3 tools/version.py
+
+      - name: Projektregeln prüfen
+        run: python3 tools/check.py
+
+      - name: Ausgelieferte Dateien zusammenstellen
+        run: |
+          mkdir -p _site
+          cp index.html manifest.webmanifest _site/
+          cp -R assets src styles _site/
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

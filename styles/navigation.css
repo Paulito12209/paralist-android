@@ -1,0 +1,305 @@
+/*
+ * Untere Navigationsleiste. Sie liegt im selben runden Container wie das
+ * Eingabefeld; beim Anlegen weicht sie und der Container wächst nach oben.
+ * Pfad: styles/navigation.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --nav-bg                  -> Fläche der Leiste: weiß im Hellmodus, schwarz im Dunkelmodus
+ * --tab-active-bg           -> Hintergrund des aktiven Reiters (Zähler-Akzentfarbe, siehe tokens.css)
+ * --avatar-btn-bg           -> Icon-/Textfarbe der inaktiven Reiter
+ * --nav-height              -> Höhe der Leiste (Material 3: 80dp)
+ * --nav-side / --nav-bottom -> Abstand zum Rand und nach unten
+ * --nav-radius              -> Rundung der Leiste
+ * --tab-add-size            -> Größe des runden Plus-Knopfes in der Mitte
+ * --tab-add-margin          -> Extra-Luft neben dem Plus-Kreis, damit die sichtbaren Lücken gleich wirken
+ * --tab-add-shift           -> wie weit der Plus-Knopf beim Drücken nach rechts rutscht
+ * --tab-add-shift-time      -> wie lange dieses Rutschen dauert
+ * --level-color             -> Silberblau der Striche, aus denen der Plus-Knopf besteht (aus der
+ *                              Level-Anzeige oben links übernommen, siehe styles/top-bar.css)
+ * --nav-inner-pad           -> Abstand des äußeren Kreises zum linken und rechten Rand der Leiste
+ *                              (steht auf --tab-active-gap, also denselben 8px wie oben und unten)
+ * --tab-icon-grow           -> um wie viel die Icons wachsen, solange die Namen aus sind
+ * --tab-hit-grow            -> wie weit die Tippfläche über das Icon hinausgeht (Material 3: 48dp)
+ * --tab-active-gap          -> Abstand zwischen dem Kreis des aktiven Reiters und dem Rand der Leiste
+ * --tab-active-size         -> Durchmesser des Kreises (.tab-circle): Icon und Name stehen darin,
+ *                              dadurch bleibt er immer rund statt sich zum Oval zu ziehen
+ * --tab-label-gap           -> Luft zwischen Icon und Name im Kreis
+ * --tab-label-lift          -> wie weit Icon und Name zusammen über der Kreismitte sitzen
+ * --tab-label-size          -> Schriftgröße der Wörter unter den Icons (sie stehen mit im Kreis,
+ *                              größer als 10px passt der längste Name nicht mehr hinein)
+ * --composer-radius         -> Rundung, sobald das Eingabefeld offen ist
+ * --composer-side           -> seitlicher Abstand, solange das Eingabefeld offen ist
+ * --keyboard-inset          -> wird von src/shell/keyboard-inset.js gesetzt
+ * --nav-glow-color          -> Farbe des Verlaufs hinter der Leiste (nur Dunkelmodus)
+ * --nav-glow-height         -> wie hoch die Verlaufs-Zone über dem unteren Rand reicht
+ * --nav-glow-strength       -> wie kräftig der Verlauf am unteren Rand ist (0 = aus, 1 = voll)
+ * --nav-glow-opacity        -> Deckkraft des ganzen Verlaufs (im Hellmodus 0, also aus)
+ * --nav-glow-arc            -> wie stark der Bogen der Oberkante durchhängt
+ * --nav-glow-fade           -> auf welcher Strecke die Oberkante ausgeblendet wird
+ *
+ * Die Namen unter den Icons sind standardmäßig aus (dafür die Icons größer);
+ * die Klasse „show-labels“ auf der Leiste blendet sie wieder ein — gesetzt von
+ * src/shell/nav-bar.js nach der Wahl im Einstellungs-Blatt. Schreibt man auf
+ * der Seite selbst, tritt die ganze Leiste zurück (Klasse „is-writing“ auf
+ * body, gesetzt von src/shell/writing.js).
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+*/
+
+.bottom-bar {
+  /* position: liegt fest unten im Gerät über der Seite, statt mitzuscrollen */
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--keyboard-inset); /* bottom: beim Anlegen rueckt die Leiste mit dem Eingabefeld ueber die Tastatur */
+  z-index: 20; /* z-index: hält die Leiste über der Liste */
+  padding: 12px var(--nav-side) calc(var(--nav-bottom) + var(--safe-bottom));
+}
+
+/* Solange das Eingabefeld offen ist, rückt der Container näher an den Rand:
+   Text, Pillen und Anhänge brauchen die Breite mehr als der luftige Rand, den
+   die Navigationsleiste allein hat (:has fragt, ob das Kind gerade tippt). */
+.bottom-bar:has(.nav-shell.is-composing) {
+  padding-left: var(--composer-side);
+  padding-right: var(--composer-side);
+}
+
+/* Schreiben auf der Seite (Titel, Text, Umbenennen): die ganze Leiste tritt
+   zurück, über der Tastatur hätte die Navigation nichts zu tun. Die Klasse
+   setzt src/shell/writing.js und nimmt sie erst weg, wenn die Tastatur wieder
+   zu ist. Nur auf Touch-Geräten — dort öffnet ein Feld die Bildschirmtastatur. */
+@media (hover: none) and (pointer: coarse) {
+  /* is-block-bar: die Leiste über der Tastatur steht (src/ui/block-bar.js) —
+     auch, während ihre Auswahl die Tastatur ersetzt und die Tastatur zu ist */
+  body.is-writing .bottom-bar,
+  body.is-block-bar .bottom-bar {
+    visibility: hidden; /* visibility: unsichtbar und nicht antippbar, ohne dass sich etwas verschiebt */
+  }
+}
+
+/* Beim Suchen steht in dieser Leiste nur noch die Knopfreihe der Suche
+   (styles/search.css blendet die Navigation dort aus). Sie rückt mit der
+   Tastatur nach oben wie das Eingabefeld, damit Schließen und Mikrofon auch
+   beim Tippen erreichbar bleiben — dafür genügt das bottom oben. */
+
+/*
+ * Der Verlauf unten im Gerät. Er sitzt auf .device statt auf der Leiste selbst.
+ *
+ * z-index 10 heißt: der Verlauf liegt ÜBER dem Inhalt (der steht auf 0), aber
+ * unter Navigation und Kopfzeile (20) und unter allen Blättern (ab 36). Das
+ * muss so sein, weil jede Listenzeile einen deckenden Hintergrund hat — sonst
+ * würden die Wisch-Knöpfe dahinter durchscheinen. Läge der Verlauf dahinter,
+ * würden Einträge ihn einfach abschneiden. So scrollt der Inhalt stattdessen
+ * sanft in den Verlauf hinein.
+ *
+ * Der Bogen entsteht dadurch, dass der Mittelpunkt des Verlaufs OBERHALB der
+ * Fläche liegt (at 50% -40%): dort, wo es zu diesem Punkt am weitesten ist —
+ * also unten und an den Seiten — wird es am hellsten, oben in der Mitte bleibt
+ * es dunkel. Die Oberkante hängt dadurch in der Mitte durch.
+ * Die zweite Lage hellt die Mitte unten wieder etwas auf, sonst wirkt der Bogen
+ * dort eingesackt. Die vielen Zwischenstufen sind Absicht — mit nur zwei
+ * Stopps entstehen im Dunkeln sichtbare Streifen.
+ *
+ * Im Hellmodus steht --nav-glow-opacity auf 0, dann ist nichts davon zu sehen.
+ * In den Hauptreitern erscheint er nur mit der Wahl unter Einstellungen ›
+ * Design (Klasse .has-nav-glow an .device, Vorgabe aus).
+ * Die Dateiansicht (.viewer) nutzt denselben Verlauf, legt ihn aber in
+ * styles/viewer.css hinter Bild und Knöpfe.
+ */
+.device::before,
+.viewer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--nav-glow-height);
+  z-index: 10;
+  opacity: var(--nav-glow-opacity);
+  background:
+    radial-gradient(var(--nav-glow-arc) 158% at 50% -40%,
+      rgba(var(--nav-glow-color), 0) 42%,
+      rgba(var(--nav-glow-color), calc(var(--nav-glow-strength) * 0.1)) 55%,
+      rgba(var(--nav-glow-color), calc(var(--nav-glow-strength) * 0.26)) 68%,
+      rgba(var(--nav-glow-color), calc(var(--nav-glow-strength) * 0.48)) 80%,
+      rgba(var(--nav-glow-color), calc(var(--nav-glow-strength) * 0.74)) 90%,
+      rgba(var(--nav-glow-color), var(--nav-glow-strength)) 100%),
+    radial-gradient(80% 60% at 50% 100%,
+      rgba(var(--nav-glow-color), calc(var(--nav-glow-strength) * 0.3)),
+      rgba(var(--nav-glow-color), 0) 75%);
+  /* mask-image: blendet die Oberkante aus. Ohne das bricht der Verlauf oben
+     hart ab — an den Seiten ist er dort schon hell, und genau da endet die
+     Fläche. Wie weit oben das passiert, hängt von der Gerätebreite ab, darum
+     die Maske statt eines festen Werts im Verlauf selbst. */
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 var(--nav-glow-fade));
+  pointer-events: none;
+}
+
+/* In den Hauptreitern nur, wenn unter Einstellungen › Design eingeschaltet
+   (Klasse setzt src/shell/nav-bar.js). Vorgabe aus: die Karte „Ansicht“ am
+   Seitenende gibt Leiste und Eingabefeld inzwischen genug Kontrast. Die
+   Dateiansicht behält ihren Verlauf. */
+.device:not(.has-nav-glow)::before {
+  content: none;
+}
+
+/* Gemeinsamer Container: trägt sowohl die Navigation als auch das Eingabefeld */
+.nav-shell {
+  position: relative; /* position: Bezug für die Anhänge, die über dem Container schweben (styles/composer-attachments.css) */
+  background: var(--nav-bg);
+  border-radius: var(--nav-radius); /* border-radius: macht die Leiste rund wie eine Pille */
+  /* kein box-shadow: die Leiste hebt sich wie im Dunkelmodus allein durch
+     den Verlauf dahinter vom Inhalt ab, nicht durch einen eigenen Schatten */
+  /* padding: nur seitlich, die Höhe gibt --nav-height in .tab-bar vor */
+  padding: 0 var(--nav-inner-pad);
+}
+
+/* Beim Anlegen wächst derselbe Container nach oben und wird eckiger */
+.nav-shell.is-composing {
+  border-radius: var(--composer-radius);
+  padding: 12px;
+}
+
+/* Beim Anlegen wird die Navigation ausgeblendet; ohne diese Zeile
+   würde das display:flex unten das hidden-Attribut überstimmen */
+.tab-bar[hidden] {
+  display: none;
+}
+
+.tab-bar {
+  min-height: var(--nav-height); /* Material 3: 80dp Containerhöhe */
+  display: flex;
+  align-items: center;
+  /* justify-content: der freie Platz geht nur in die Lücken ZWISCHEN den
+     Knöpfen, nicht an die Ränder. Nur so ist der Abstand vom äußeren Kreis zum
+     Rand immer genau --nav-inner-pad (also dieselben 8px wie oben und unten) —
+     mit space-evenly hing er an der Gerätebreite und war z.B. auf 375px nur
+     6,8px. Der Plus-Kreis holt sich seine Extra-Luft über --tab-add-margin. */
+  justify-content: space-between;
+}
+
+.tab-btn {
+  min-width: 0;
+  display: flex;
+  color: var(--avatar-btn-bg); /* Zähler-Akzentfarbe statt --muted, damit sie zu den anderen drei Farben passt */
+  font-size: var(--tab-label-size);
+  font-weight: 500;
+  position: relative;
+}
+
+/* Inaktive Reiter gedämpft wie der Verlauf (--nav-glow-opacity), der aktive
+   Reiter bleibt voll deckend */
+.tab-btn:not(.is-active) {
+  opacity: 0.6;
+}
+
+/* Der Knopf ist nur so breit wie sein Icon, damit die Abstände stimmen — zum
+   Tippen wäre das zu wenig. Diese unsichtbare Fläche liegt über dem Icon und
+   greift nach allen Seiten darüber hinaus, sodass das Tippziel die von
+   Material 3 verlangten 48dp erreicht, ohne dass sich das Layout ändert. */
+.tab-btn::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--tab-hit-grow));
+}
+
+/*
+ * Der Kreis, den der aktive Reiter hinterlegt bekommt. Er hat eine feste
+ * Größe (Leistenhöhe minus --tab-active-gap oben und unten) und ist dadurch
+ * immer rund — nie ein Oval, das sich nach der Länge des Namens richtet.
+ * Icon UND Name stehen darin, deshalb bleiben Größe und Lage gleich, ob die
+ * Namen nun an- oder ausgeschaltet sind. Weil der Kreis überall gleich breit
+ * ist, stehen die Icons von „Übersicht“ und „Medien“ auch ohne Extra-Regel
+ * in einer Reihe.
+ */
+.tab-circle {
+  width: var(--tab-active-size);
+  height: var(--tab-active-size);
+  flex: 0 0 auto; /* flex: auf schmalen Geräten rücken die Kreise zusammen, statt zu Ovalen zu schrumpfen */
+  border-radius: 50%; /* border-radius: aus dem Quadrat wird der Kreis */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tab-label-gap);
+}
+
+/* Mit Namen rückt das Paar aus Icon und Name etwas nach oben: nach unten hin
+   wird der Kreis schnell schmaler, und der Name ist das breiteste Stück darin.
+   Ohne Namen bleibt das aus, sonst säße das Icon sichtbar zu hoch. */
+.tab-bar.show-labels .tab-circle {
+  padding-bottom: var(--tab-label-lift);
+}
+
+.tab-label {
+  display: none; /* display: Namen sind standardmäßig aus, „show-labels“ blendet sie wieder ein */
+  white-space: nowrap; /* sonst bricht ein längerer Name mitten im Wort um */
+}
+
+.tab-bar.show-labels .tab-label {
+  display: block;
+}
+
+.tab-btn .icon {
+  /* Ohne Namen ist mehr Platz für das Icon: um --tab-icon-grow größer als mit Namen */
+  width: calc(24px + var(--tab-icon-grow));
+  height: calc(24px + var(--tab-icon-grow));
+}
+
+.tab-bar.show-labels .tab-btn .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.tab-btn.is-active .tab-circle {
+  /* color: --bg statt --text, weil der Kreis jetzt die Zähler-Akzentfarbe
+     ist (hell im Dunkelmodus, dunkel im Hellmodus) - Icon und Name brauchen
+     darauf den jeweils entgegengesetzten Kontrast, den --bg genau abbildet */
+  color: var(--bg);
+  background: var(--tab-active-bg);
+}
+
+.tab-btn:active {
+  opacity: 0.55;
+}
+
+.tab-add {
+  width: var(--tab-add-size);
+  height: var(--tab-add-size);
+  border-radius: 50%; /* border-radius: macht den Plus-Button rund */
+  background: var(--tab-add-bg); /* ohne Füllung: das Kreuz aus Strichen ist der ganze Knopf */
+  color: var(--level-color); /* Silberblau der Level-Anzeige, die Striche stammen von dort */
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto; /* flex: der Kreis behält seine Größe, er wächst und schrumpft nicht mit */
+  /* align-self: der Knopf sitzt senkrecht in der Mitte der Leiste — mit und ohne
+     Namen unter den Icons, deren Höhe sich sonst auf ihn auswirken würde */
+  align-self: center;
+  /* Die Icons füllen ihr Kästchen nicht ganz aus, der Kreis schon: ohne diesen
+     Rand sähen die beiden Lücken neben dem Kreis enger aus als die äußeren */
+  margin: 0 var(--tab-add-margin);
+  /* kein box-shadow: ohne Füllung stünde der Schatten allein da, ohne dass
+     etwas zu sehen wäre, das ihn wirft */
+  transition: transform var(--tab-add-shift-time) ease-out; /* transition: der Kreis gleitet beim Drücken, statt zu springen */
+}
+
+.tab-add .icon {
+  /* Das Icon füllt den Knopf fast ganz aus: das Kreuz aus Strichen IST der
+     Knopf, es sitzt nicht mehr als kleines Zeichen auf einer Fläche.
+     Die Maße der einzelnen Striche stehen im Sprite bei icon-plus-ticks */
+  width: 46px;
+  height: 46px;
+}
+
+/*
+ * Solange der Finger liegt, rutscht der Kreis ein Stück nach rechts — dorthin,
+ * wo gleich der Schließen-Knopf des Eingabefelds sitzt. Zusammen mit dem X,
+ * das sich beim Aufgehen von 10 auf 45 Grad dreht (styles/composer.css), sieht
+ * es aus, als wanderte derselbe Knopf hinüber.
+ */
+.tab-add:active {
+  opacity: 0.55;
+  transform: translateX(var(--tab-add-shift)); /* transform: verschiebt den Kreis, ohne das Layout der Leiste anzufassen */
+}
+
+/* Eingabefeld: sitzt im selben Container wie die Navigation */

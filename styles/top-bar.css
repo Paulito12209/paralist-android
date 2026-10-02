@@ -1,0 +1,246 @@
+/*
+ * Kopfzeile: Level-Anzeige links, Suchleiste in der Mitte, Profil-Knopf rechts.
+ * Pfad: styles/top-bar.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --top-bar-icon-width / --top-bar-icon-height          -> Größe der Icons oben
+ * --top-bar-profile-icon-size                           -> Größe des Einstellungs-/Profil-Icons
+ * --top-bar-leading-btn-width / -height                 -> runder Knopf oben links
+ * --top-bar-profile-btn-width / -height                 -> Profil-Knopf oben rechts
+ * --top-bar-fade                                        -> FADE-EFFEKT: Höhe der Ausblendung unter der Suche.
+ *                                                          Wie es funktioniert: die oberen (100% - --top-bar-fade)
+ *                                                          der Kopfzeile sind deckend, die unteren --top-bar-fade Pixel
+ *                                                          verlaufen zu transparent (mit mask-image in .top-bar).
+ *                                                          Anpassen: Wert in tokens.css erhöhen (z.B. 20px = intensiver)
+ *                                                          oder senken (z.B. 10px = subtiler).
+ * --page-head-top                                       -> Abstand über der Suchleiste
+ * --search-bar-height / --search-bar-radius             -> Suchleiste
+ * --level-color / --level-dim / --level-glow            -> Striche und Zahl der Level-Anzeige
+ * --icon-strong / --placeholder                         -> Icon- und Platzhalterfarbe
+ * --bg                                                  -> Hintergrundfarbe (wird am unteren Rand ausgeblendet)
+ * --avatar-btn-bg                                       -> Farbe des Icons im Profil-/Einstellungs-Knopf rechts,
+ *                                                          des Such-Icons und des Platzhaltertexts „Suchen“
+ * --search-clear-size / --search-clear-icon             -> Kreis mit dem × zum Leeren und das × darin
+ * --search-clear-bg / --search-clear-ink                -> Fläche des Kreises und Farbe des ×
+ *                                                          (die vier stehen in styles/tokens-pages.css)
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+*/
+
+.top-bar {
+  flex: 0 0 auto;
+  /* position/z-index: die Kopfleiste liegt ueber der Inhaltsflaeche,
+     damit beim Scrollen nichts durch sie hindurchlaeuft */
+  position: relative;
+  z-index: 20;
+  /* background: feste Hintergrundfarbe; mask-image schafft dann die Ausblendung */
+  background: var(--bg);
+  /* mask-image: erstellt eine unsichtbare Ebene, die nach unten hin transparent wird.
+     Die unteren --top-bar-fade Pixel verlaufen von 100% Deckkraft zu 0% (transparent).
+     Damit Inhalt weich unter der Kopfzeile verschwindet — ANPASSBAR: --top-bar-fade
+     in styles/tokens.css aendern (z.B. auf 20px für intensiveres Fade). */
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black calc(100% - var(--top-bar-fade)),
+    transparent 100%
+  );
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* gleicher Wert wie über dem Zurück-Pfeil (.page-head), damit Seitentitel überall gleich hoch stehen */
+  padding-top: calc(var(--page-head-top) + var(--safe-top));
+  padding-bottom: var(--top-bar-fade);
+  padding-left: 16px;
+  padding-right: 16px;
+  /* negativer Abstand: der Inhaltsbereich schiebt sich unter den Verlauf,
+     sonst waere der Fade unsichtbar (gleiche Farbe wie der Geraete-Hintergrund) */
+  margin-bottom: calc(-1 * var(--top-bar-fade));
+}
+
+/* Auf Unterseiten (Sammlung, Arbeitsbereich, Eintrag) gibt es Level, Suche und
+   Profil nicht: dort steht der Zurück-Pfeil ganz oben in der eigenen Kopfzeile
+   der Seite (.page-head in styles/rows.css). Den freien Platz nimmt der Inhalt
+   ein — dazu gehört die Regel für .content in styles/base.css. */
+body.is-subpage .top-bar {
+  display: none;
+}
+
+.icon-btn {
+  border-radius: 50%;
+  /* macht die Buttons rund; Breite/Höhe allein ergeben kein Kreis */
+  background: var(--card);
+  display: grid;
+  place-items: center;
+  /* Icon sitzt in der Mitte; mit flex allein wäre die Zentrierung umständlicher */
+  color: var(--icon-strong);
+  box-shadow: var(--shadow);
+  flex: 0 0 auto;
+  width: var(--top-bar-leading-btn-width);
+  height: var(--top-bar-leading-btn-height);
+}
+
+/* Level-Anzeige oben links: transparenter runder Knopf mit Strich-Skala */
+.level-btn {
+  width: var(--top-bar-leading-btn-width);
+  height: var(--top-bar-leading-btn-height);
+  border-radius: 50%;
+  /* border-radius: macht den Knopf rund */
+  background: transparent;
+  box-shadow: none;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.level-btn:active {
+  opacity: 0.7;
+}
+
+.level-gauge {
+  width: 44px;
+  height: 44px;
+  display: block;
+  filter: drop-shadow(0 0 3px var(--level-glow));
+  /* filter: sanftes Leuchten, im Hellmodus unsichtbar */
+}
+
+.level-tick {
+  stroke: var(--level-dim);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* Erreichte Striche leuchten in Silberblau */
+.level-tick.is-on {
+  stroke: var(--level-color);
+}
+
+.level-num {
+  fill: var(--level-color);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.level-label {
+  fill: var(--level-color);
+  font-size: 6.5px;
+  font-weight: 600;
+}
+
+/* Profil-/Einstellungs-Knopf rechts: transparent ohne Schatten, eigene feste Icon-Farbe */
+.avatar {
+  width: var(--top-bar-profile-btn-width);
+  height: var(--top-bar-profile-btn-height);
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  display: grid;
+  place-items: center;
+  color: var(--avatar-btn-bg);
+  flex: 0 0 auto;
+  /* Kein overflow: hidden, damit Vektor-Icons an Subpixel-Rändern nicht abgeschnitten werden */
+}
+
+.avatar:active {
+  opacity: 0.7;
+}
+
+/* Foto im Knopf: fest auf die Knopfgröße, rund beschnitten — ohne feste Maße
+   nähme ein Hochkant-Foto seine eigene Höhe an und ragte unten heraus */
+.avatar .avatar-photo {
+  width: var(--top-bar-profile-btn-width);
+  height: var(--top-bar-profile-btn-height);
+  object-fit: cover; /* object-fit: füllt den Kreis, ohne das Foto zu verzerren */
+  border-radius: 50%; /* border-radius: hält das Foto kreisrund */
+  display: block;
+}
+
+.avatar .icon {
+  width: var(--top-bar-profile-icon-size);
+  height: var(--top-bar-profile-icon-size);
+}
+
+.icon-btn .icon,
+.search-icon {
+  width: var(--top-bar-icon-width);
+  height: var(--top-bar-icon-height);
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+  /* min-width: die Suche darf schmaler als „Suchen“ werden, statt Level und Profil wegzudrücken */
+  height: var(--search-bar-height);
+  background: var(--card);
+  border: 0;
+  outline: none;
+  border-radius: var(--search-bar-radius);
+  /* Pillenform; Höhe allein macht die Ecken nicht rund */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  color: var(--muted);
+}
+
+.search-icon {
+  flex: 0 0 auto;
+  /* Such-Icon soll nicht mit dem Textfeld mitwachsen */
+  color: var(--avatar-btn-bg);
+}
+
+.search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  /* text-overflow: bei ganz schmalen Geräten wird „Suchen“ zu „Suc…“ statt hart abgeschnitten */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Das eingebaute × des Browsers (blau in Chrome, grau in Safari) weicht dem
+   eigenen Kreis unten, der überall gleich aussieht. */
+.search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  /* -webkit-appearance: ohne das zeichnet WebKit sein × trotzdem */
+  display: none;
+}
+
+/* × im Kreis: erst sichtbar, wenn etwas im Feld steht (dann ist der Platzhalter weg). */
+.search-clear {
+  display: none;
+  flex: 0 0 auto;
+  place-items: center;
+  width: var(--search-clear-size);
+  height: var(--search-clear-size);
+  border-radius: 50%;
+  background: var(--search-clear-bg);
+  color: var(--search-clear-ink);
+}
+
+.search:has(input:not(:placeholder-shown)) .search-clear {
+  /* :has: das Feld selbst sagt, ob etwas drinsteht — kein Nachführen per Skript nötig */
+  display: grid;
+}
+
+.search-clear .icon {
+  width: var(--search-clear-icon);
+  height: var(--search-clear-icon);
+  stroke-width: 3;
+}
+
+.search-clear:active {
+  opacity: 0.55;
+}
+
+.search input::placeholder {
+  color: var(--avatar-btn-bg);
+  opacity: 0.6;
+}

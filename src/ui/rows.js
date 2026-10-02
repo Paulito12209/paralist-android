@@ -1,0 +1,215 @@
+/*
+ * Die Zeilen der Listen: Eintrag, Arbeitsbereich und die Wisch-Knöpfe dahinter.
+ * Nur Markup — wer die Zeile anklickt, entscheidet src/ui/list-clicks.js.
+ * Pfad: src/ui/rows.js
+ *
+ * Keine anpassbaren visuellen Werte: Höhe, Farben und Abstände stehen in
+ * styles/rows.css (Klasse .workspace-row, das Favoriten-Icon in .row-glyph),
+ * styles/swipe-rows.css (.swipe, .swipe-action, der grüne Abhaken-Knopf),
+ * der durchgestrichene Titel einer erledigten Aufgabe (im Archiv: grünes Icon)
+ * in styles/task-status.css.
+ */
+
+import { escapeHtml, icon } from "../core/html.js";
+import { sameId } from "../core/ids.js";
+import { noHistoryForm } from "../core/no-history.js";
+import { typeIcon } from "../data/config.js";
+import { isTaskDone } from "../data/config-tasks.js";
+import { mediaKindOf, workspaceIcon, workspaceLabel } from "../data/queries.js";
+import { ui } from "../data/state.js";
+import { thumbOf } from "../data/thumbs.js";
+import { canMoveWorkspace } from "./move-menu.js";
+
+/** Eine Zeile mit Wisch-Knöpfen; die Knöpfe liegen hinter der Zeile. */
+export function swipeRow(dataAttr, actionsLeft, actionsRight, rowHtml) {
+  const side = (position, actions) =>
+    actions.length
+      ? `<div class="swipe-actions swipe-actions-${position}">${actions.join("")}</div>`
+      : "";
+
+  return `
+    <div class="swipe" ${dataAttr}>
+      ${side("left", actionsLeft)}
+      ${side("right", actionsRight)}
+      <div class="swipe-body">${rowHtml}</div>
+    </div>
+  `;
+}
+
+/** Ein runder Wisch-Knopf. „action“ sagt, was passiert, „tone“ nur, welche Farbe der Kreis hat. */
+export function swipeAction(action, label, iconName, tone = action) {
+  return `
+    <button class="swipe-action swipe-action-${tone}" type="button" data-swipe="${action}" aria-label="${label}">
+      ${icon(iconName)}
+    </button>
+  `;
+}
+
+/**
+ * Die drei Punkte rechts in der Zeile: nur ein Tipp darauf
+ * öffnet das Menü der Zeile — gedrückt Halten hebt die Zeile zum Verschieben an
+ * (src/ui/swipe.js), und das Zeichen wechselt dabei zum Griff „=“ aus Material 3
+ * (styles/android-reorder.css).
+ * Ein span mit role="button": ein Knopf im Zeilen-Knopf wäre ungültiges HTML.
+ */
+function rowMore() {
+  return `<span class="row-more" role="button" tabindex="0" data-row-more aria-label="Mehr">${icon("dots", "icon-dots")}${icon("drag-handle", "icon-drag")}</span>`;
+}
+
+/**
+ * Zeigt diese Zeile gerade die drei Punkte? Dann öffnet nur ein Tipp darauf ihr
+ * Menü — weder gedrückt Halten noch das lange Drücken, das Android als
+ * Rechtsklick meldet.
+ */
+export function hasRowMore(row) {
+  return Boolean(row?.querySelector("[data-row-more]"));
+}
+
+/**
+ * Bild vor dem Titel: kleine Vorschau bei Fotos, Videos und Zeichnungen,
+ * sonst das Typ-Icon. Medien zeigen ihre Art statt des allgemeinen Icons.
+ */
+export function entryGlyph(entry) {
+  const thumb = thumbOf(entry.id);
+  const kind = mediaKindOf(entry);
+  const hasPreview =
+    entry.type === "zeichnung" || (entry.type === "medien" && (kind === "image" || kind === "video"));
+  if (thumb && entry.type === "zeichnung") return `<img class="entry-thumb" src="${thumb}" alt="" loading="lazy" decoding="async" />`;
+  /* Fotos und Videos stehen ganz im Icon-Feld, hochkant schmal und quer flach —
+     sonst zeigt das Quadrat nur die Mitte, und helle Screenshots wirken leer. */
+  if (thumb && hasPreview) {
+    return `<span class="entry-thumb-slot"><img class="entry-thumb is-fit" src="${thumb}" alt="" loading="lazy" decoding="async" /></span>`;
+  }
+  if (entry.type === "medien") {
+    const kindIcons = { image: "image", video: "video", audio: "wave", doc: "doc" };
+    return icon(kindIcons[kind] || "doc", "entry-type");
+  }
+  /* Ein selbst gewähltes Icon (Seite des Eintrags, Menü) steht vor dem Icon des Typs */
+  return icon(entry.icon || typeIcon(entry.type), "entry-type");
+}
+
+/**
+ * Das Icon vor dem Titel als Favoriten-Schalter: ein Tipp darauf wirkt wie der
+ * Stern-Knopf beim Wischen, und ein Favorit zeigt sein Icon im Gold des
+ * Sterns. Vorschaubilder bleiben, wie sie sind — auf einem Foto sähe man das
+ * Gold nicht, und ein Tipp darauf soll das Foto öffnen.
+ */
+function favoriteGlyph(glyphHtml, isFavorite) {
+  if (glyphHtml.includes("entry-thumb")) return glyphHtml;
+  const label = isFavorite ? "Aus Favoriten entfernen" : "Zu Favoriten";
+  return `<span class="row-glyph${isFavorite ? " is-favorite" : ""}" data-fav-toggle aria-label="${label}">${glyphHtml}</span>`;
+}
+
+/**
+ * Die vier Wisch-Knöpfe einer Eintrags-Zeile, je zwei auf jeder Seite: links
+ * steht, was den Eintrag in der Liste lässt — ganz außen Verknüpfen, daneben
+ * Favorit —, rechts das, was ihn herausnimmt: Archivieren direkt neben dem
+ * roten Löschen.
+ *
+ * Eine Aufgabe in einer allgemeinen Liste hat keinen runden Haken vor sich;
+ * dort tritt der grüne Abhaken-Knopf an die Stelle des Favoriten-Knopfes
+ * (Favorit geht dort über das Icon). Die Aufgaben-Seite zeigt den Haken
+ * selbst und behält deshalb den Stern.
+ *
+ * Die Liste steht hier und nicht bei den einzelnen Zeilen, weil es zwei Arten
+ * von Eintrags-Zeilen gibt (diese hier und die der Aufgaben-Seite). Stünde sie
+ * zweimal im Code, liefen die beiden Seiten mit der Zeit auseinander.
+ * @param withDone true, wenn eine Aufgabe hier den Abhaken-Knopf bekommt.
+ */
+export function entryActions(entry, withDone = false) {
+  const second =
+    withDone && entry.type === "aufgabe"
+      ? swipeAction("done", isTaskDone(entry) ? "Wieder öffnen" : "Abhaken", "check")
+      : swipeAction("favorite", "Favorit", entry.favorite ? "star" : "star-outline", "favorite");
+  return {
+    left: [swipeAction("link", "Verknüpfen", "link"), second],
+    right: [
+      swipeAction("archive", "Archivieren", "archive"),
+      swipeAction("delete", "Löschen", "trash"),
+    ],
+  };
+}
+
+/** Die Wisch-Knöpfe einer archivierten Zeile: rechts holt sie zurück, links löscht sie endgültig. */
+export function archiveActions(restoreKind, deleteKind) {
+  return {
+    left: [swipeAction(restoreKind, "Zurückholen", "history", "restore")],
+    right: [swipeAction(deleteKind, "Löschen", "trash", "delete")],
+  };
+}
+
+/**
+ * Zeile eines Eintrags mit ihren Wisch-Knöpfen.
+ * @param prefix  optionaler Einschub vor dem Titel, z.B. die Uhrzeit im Kalender.
+ * @param actions andere Wisch-Knöpfe als die üblichen — das Archiv gibt hier
+ *   Zurückholen und Löschen herein, die Zeile selbst bleibt dieselbe.
+ */
+export function entryRow(entry, prefix = "", actions = entryActions(entry, true)) {
+  /* Auch eine Aufgabe trägt hier ihr Icon — abgehakt wird sie über den
+     grünen Wisch-Knopf; erledigt bleibt sie am durchgestrichenen Titel erkennbar
+     („is-task-done“ an der Zeile: im Archiv statt dessen ein grünes Icon). */
+  const done = entry.type === "aufgabe" && isTaskDone(entry);
+  return swipeRow(
+    `data-entry="${entry.id}"`,
+    actions.left,
+    actions.right,
+    `
+      <button class="workspace-row entry-row${done ? " is-task-done" : ""}" type="button" data-open-entry="${entry.id}">
+        ${favoriteGlyph(entryGlyph(entry), entry.favorite)}
+        ${prefix}
+        <span${done ? ' class="is-done"' : ""}>${escapeHtml(entry.title)}</span>
+        ${icon("chevron", "chevron")}
+        ${rowMore()}
+      </button>
+    `
+  );
+}
+
+/* Die üblichen Wisch-Knöpfe eines Arbeitsbereichs: dieselbe Aufteilung wie
+   bei einem Eintrag — links bleibt er erhalten (Favorit, in einen anderen
+   Tab), rechts geht er heraus: Archivieren grau neben dem roten Löschen.
+   Verschieben gibt es nur, wenn es mehr als einen Tab gibt; sonst gäbe es kein Ziel. */
+function workspaceActions(workspace) {
+  const left = [swipeAction("favorite-workspace", "Favorit", workspace.favorite ? "star" : "star-outline", "favorite")];
+  if (canMoveWorkspace()) left.push(swipeAction("move-workspace", "In anderen Tab verschieben", "folder-move", "move"));
+  return {
+    left,
+    right: [
+      swipeAction("archive-workspace", "Archivieren", "archive", "archive"),
+      swipeAction("delete-workspace", "Löschen", "trash", "delete"),
+    ],
+  };
+}
+
+/**
+ * Zeile eines Arbeitsbereichs.
+ * @param canEdit true, wenn beim Umbenennen an dieser Stelle ein Eingabefeld stehen darf.
+ * @param actions andere Wisch-Knöpfe als die üblichen (Archiv: Zurückholen und Löschen).
+ */
+export function workspaceRow(workspace, canEdit = false, actions = workspaceActions(workspace)) {
+  if (canEdit && workspace.id === ui.editingWorkspaceId) {
+    /* Der Vorgabename steht grau als Platzhalter; wer nichts tippt, bekommt ihn.
+       Schon Getipptes bleibt stehen, auch wenn die Liste zwischendurch neu gezeichnet wird. */
+    const draft = ui.nameDraft && sameId(ui.nameDraft.id, workspace.id) ? ui.nameDraft.value : workspace.name;
+    return `
+      <div class="workspace-row workspace-edit">
+        <span class="row-glyph">${icon(workspaceIcon(workspace))}</span>
+        <input class="workspace-name-input" id="workspace-name-input" type="text" data-editing="${workspace.id}" value="${escapeHtml(draft)}" placeholder="${escapeHtml(workspace.placeholder || workspaceLabel(workspace))}" aria-label="Arbeitsbereich benennen" form="${noHistoryForm}" enterkeyhint="go" />
+      </div>
+    `;
+  }
+
+  return swipeRow(
+    `data-workspace="${workspace.id}"`,
+    actions.left,
+    actions.right,
+    `
+      <button class="workspace-row" type="button" data-open-workspace="${workspace.id}">
+        ${favoriteGlyph(icon(workspaceIcon(workspace)), workspace.favorite)}
+        <span>${escapeHtml(workspaceLabel(workspace))}</span>
+        ${icon("chevron", "chevron")}
+        ${rowMore()}
+      </button>
+    `
+  );
+}

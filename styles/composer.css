@@ -1,0 +1,331 @@
+/*
+ * Eingabefeld zum Anlegen: Pillen oben, Textfeld und Typ-Knöpfe unten.
+ * Die Kachelreihe der Anhänge steht in styles/composer-attachments.css.
+ * Pfad: styles/composer.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --composer-input-size     -> Schriftgröße im Textfeld
+ * --composer-chip-size      -> Schriftgröße der beiden Pillen oben
+ * --composer-type-off       -> wie blass ein gesperrter Typ-Knopf ist
+ * --composer-btn-size       -> Größe der runden Knöpfe und Höhe der beiden Pillen
+ * --composer-mic-bg         -> Fläche der unveränderten Pillen, nur zu 20% zu sehen
+ * --composer-mic-border     -> dünner Rand darum
+ * --composer-fill           -> Fläche von Medien-Plus und Diktat-Knopf (styles/tokens-pages.css, dunkel in tokens-dark.css)
+ * --level-color / --nav-bg  -> Anlegen-Knopf, sobald etwas drinsteht: Silberblau des Fortschritts, Pfeil in Leistenfarbe
+ * --composer-close-angle    -> wie schief das Kreuz im Schließen-Knopf steht (45deg = X)
+ * --composer-close-angle-from -> Winkel, mit dem das X beim Aufgehen startet
+ * --composer-close-slide    -> aus welcher Entfernung der Schließen-Knopf heranrückt
+ * --composer-close-anim     -> wie lange dieses Heranrücken dauert
+ * --composer-close-spin     -> wie lange das Kreuz zum X dreht
+ * --text / --card           -> gefüllter Schließen-Knopf: Körper hell, Kreuz dunkel (im Dunkeln umgekehrt)
+ * --danger                  -> Rot des Diktat-Knopfes beim Aufnehmen
+ * --placeholder             -> Farbe des Platzhaltertexts
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei,
+ * ebenso die Größe des X im Schließen-Knopf (.composer-close .icon, 18px — die
+ * Form der Striche steht im Sprite bei icon-plus-full).
+*/
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.composer[hidden] {
+  display: none;
+}
+
+/* Gewählt „Arbeitsbereich“ (src/features/composer/composer-workspace.js): er
+   liegt auf derselben Ebene wie der Eingang — der Ort-Chip fällt weg. Die
+   Kennung #composer-link schlägt die Regeln der Android-Fassung
+   (styles/android-composer.css). */
+.composer.is-workspace #composer-link {
+  display: none;
+}
+
+/* Verknüpfen-Knopf oben links: wählt den Eintrag, von dessen Seite man kommt, oder Arbeitsbereich bzw. Projekt */
+.composer-link {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* min-height: die Pille ist so hoch wie der Anlegen-Knopf rechts daneben */
+  min-height: var(--composer-btn-size);
+  padding: 0 12px;
+  border-radius: 999px; /* border-radius: macht den Knopf zur kleinen Pille */
+  /* border: immer da, nur meist unsichtbar — sonst würde die Pille um 2px
+     springen, sobald sie den Rand der Vorschlags-Fassung bekommt */
+  border: 1px solid transparent;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: var(--composer-chip-size);
+  font-weight: 500;
+  max-width: 100%;
+}
+
+/*
+ * Solange Ablageort und Typ noch genau so stehen, wie die Seite sie
+ * vorgeschlagen hat, sind die Pillen nur angedeutet: blasse Fläche mit dünnem
+ * Rand. Erst eine eigene Wahl füllt sie und macht damit sichtbar,
+ * dass hier nicht mehr die Vorgabe steht.
+ */
+.composer-link.is-preset {
+  /* color-mix: die Fläche ist nur zu 20% zu sehen, der Container scheint durch */
+  background: color-mix(in srgb, var(--composer-mic-bg) 20%, transparent);
+  border-color: var(--composer-mic-border);
+}
+
+.composer-link span {
+  white-space: nowrap;
+}
+
+.composer-link .icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
+.composer-caret {
+  transform: rotate(90deg); /* transform: dreht den Pfeil nach unten, statt ein zweites Icon zu bauen */
+}
+
+.composer-input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: var(--composer-input-size);
+  padding: 12px 4px 10px;
+}
+
+.composer-input::placeholder {
+  color: var(--placeholder);
+}
+
+.composer-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.composer-types {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto; /* overflow: bei vielen Typ-Knöpfen seitlich schieben statt umbrechen */
+  scrollbar-width: none; /* scrollbar-width: unsichtbare Leiste, der Inhalt bleibt schiebbar */
+}
+
+.composer-types::-webkit-scrollbar {
+  display: none; /* display: gleiche unsichtbare Leiste in Chrome und Safari */
+}
+
+.composer-type {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%; /* border-radius: macht die Typ-Knöpfe rund */
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.composer-type .icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Der gewählte Typ bleibt ohne eigenen Hintergrund sichtbar: nur das Icon
+   nimmt seine Farbe an (inline über --type-color je Typ gesetzt) */
+.composer-type.is-active .icon {
+  color: var(--type-color, var(--text));
+}
+
+/* Gesperrt: der Projekt-Knopf, solange der Ablageort schon ein Projekt ist —
+   ein Projekt in einem Projekt gibt es nicht (src/data/config.js) */
+.composer-type:disabled {
+  opacity: var(--composer-type-off);
+  cursor: default;
+}
+
+/* Schließen-Knopf: derselbe gefüllte Kreis wie der Plus-Knopf der Navigation —
+   heller Körper, dunkles Kreuz; im Dunkelmodus tauschen die beiden die Rollen */
+.composer-close {
+  width: var(--composer-btn-size);
+  height: var(--composer-btn-size);
+  border-radius: 50%; /* border-radius: macht den Schließen-Knopf rund */
+  background: var(--text);
+  color: var(--card);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.composer-close .icon {
+  width: 18px;
+  height: 18px;
+  transform: rotate(var(--composer-close-angle)); /* transform: aus dem Kreuz der Navigation wird so das X zum Schließen */
+}
+
+/*
+ * Beim Aufgehen kommt der Knopf von links heran und das Kreuz dreht von fast
+ * gerade (10 Grad) zum X — die Fortsetzung des Plus-Knopfes, der beim Drücken
+ * nach rechts rutscht (styles/navigation.css). Das Drehen läuft länger als das
+ * Heranrücken und ohne starkes Abbremsen am Anfang, damit man es wirklich sieht. Die Regeln hängen an
+ * `.composer:not([hidden])`, weil eine Animation von selbst neu startet,
+ * sobald ein Element aus display:none wieder auftaucht.
+ */
+@keyframes composer-close-in {
+  from {
+    transform: translateX(calc(-1 * var(--composer-close-slide)));
+    opacity: 0;
+  }
+}
+
+@keyframes composer-close-turn {
+  from {
+    transform: rotate(var(--composer-close-angle-from));
+  }
+}
+
+.composer:not([hidden]) .composer-close {
+  animation: composer-close-in var(--composer-close-anim) ease-out;
+}
+
+.composer:not([hidden]) .composer-close .icon {
+  animation: composer-close-turn var(--composer-close-spin) ease-in-out;
+}
+
+/* Diktat-Knopf neben dem Anlegen: gefüllter Kreis ohne Rand wie das Medien-Plus
+   links, damit beide Seiten der Leiste gleich aussehen; beim Aufnehmen rot */
+.composer-mic {
+  width: var(--composer-btn-size);
+  height: var(--composer-btn-size);
+  border-radius: 50%; /* border-radius: rund wie der Schließen-Knopf daneben */
+  background: var(--composer-fill);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.composer-mic .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.composer-mic.is-recording {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+.composer-close:active,
+.composer-mic:active,
+.composer-type:active,
+.composer-send:active {
+  opacity: 0.55;
+}
+
+/* Oberste Zeile: Pillen links, Anlegen-Knopf rechts außen */
+.composer-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Beide Pillen oben: links der Ablageort, rechts der Typ */
+.composer-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.composer-chips .composer-link {
+  min-width: 0; /* lange Namen kürzen sich, statt die Zeile zu sprengen */
+  flex: 0 1 auto;
+}
+
+.composer-chips .composer-link span {
+  min-width: 0; /* min-width: ohne das schrumpft der Text nicht und der Anlegen-Knopf rutscht in die nächste Zeile */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Die Typ-Pille kürzt sich nie: Typnamen sind kurz, und der Wechsel auf
+   „Medium“ beim ersten Anhang muss lesbar bleiben. Nachgeben muss der
+   Ortsname links, der beliebig lang sein kann. */
+.composer-chips #composer-type-pill {
+  flex-shrink: 0;
+}
+
+/* Anlegen und Schließen sitzen zusammen rechts */
+.composer-end {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+/* Anlegen-Knopf: im Silberblau des Fortschritts — Anlegen bringt Punkte,
+   darum dieselbe Farbe wie Plus und Ring des Navigations-Knopfes */
+.composer-send {
+  width: var(--composer-btn-size);
+  height: var(--composer-btn-size);
+  border-radius: 50%; /* border-radius: macht den Anlegen-Knopf rund */
+  background: var(--level-color);
+  color: var(--nav-bg);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.composer-send .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Das Wort „Speichern“ zeigt nur das Blatt der Android-Fassung
+   (styles/android-composer.css); sonst trägt der runde Knopf nur den Pfeil */
+.composer-send-label {
+  display: none;
+}
+
+/* Ohne Text und ohne Anhang gibt es nichts anzulegen: dann ist der Knopf grau statt blau */
+.composer-send:disabled {
+  background: var(--composer-fill);
+  color: var(--placeholder);
+  cursor: default;
+}
+
+.composer-send:disabled:active {
+  opacity: 1;
+}
+
+/* Plus links neben den Typ-Knöpfen: hängt Medien an, darum eigener grauer Kreis
+   statt der Typ-Färbung, wie zuvor beim gewählten Typ-Knopf */
+.composer-attach {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%; /* border-radius: gleiche runde Form wie die Typ-Knöpfe */
+  background: var(--composer-fill);
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  flex: 0 0 auto;
+}
+
+.composer-attach .icon {
+  width: 22px;
+  height: 22px;
+}
+
+.composer-attach:active {
+  opacity: 0.55;
+}

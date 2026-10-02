@@ -1,0 +1,244 @@
+/*
+ * Eine Überlagerung nach unten ziehen, um sie zu schließen: die Blätter
+ * (Fortschritt, Einstellungen mit allen Unterseiten, Profilbild, Datum,
+ * Auswahl-Blatt) und die bildschirmfüllende Dateiansicht. Gezogen wird nur,
+ * wenn der Inhalt schon oben steht — sonst scrollt man ganz normal. Das gilt
+ * auch über Zeilen, Knöpfen und Karten im Inhalt, nicht nur am Kopf; im
+ * Auswahl-Blatt zählt dafür die Liste darin (.sheet-options).
+ * Ausnahme: Blätter mit data-android-page sind eine ganze Seite und lassen
+ * sich nicht ziehen.
+ * Pfad: src/ui/modal-pull.js
+ *
+ * ANPASSBARE WERTE
+ * -----------------------------------
+ * --modal-dismiss-pull (styles/tokens.css) -> wie weit man ziehen muss, damit es schließt
+ * startSlack   -> ab wie vielen Pixeln die Bewegung als Ziehen gilt
+ * dimDistance  -> ab welcher Strecke der dunkle Hintergrund ganz aufgehellt ist (Pixel)
+ * closeAnimationMs -> wie lange das Blatt nach dem Loslassen nach unten gleitet (ms)
+ * settleTimeoutMs  -> wie lange auf das Schließen über den Verlauf gewartet wird,
+ *                     bevor das Blatt notfalls wieder an seinen Platz springt (ms)
+ */
+
+import { cssNumber } from "../core/css-vars.js";
+import { dom } from "../core/dom.js";
+
+const startSlack = 8;
+const dimDistance = 420;
+const closeAnimationMs = 180;
+const settleTimeoutMs = 1000;
+
+let pull = null;
+let ignoreClicksUntil = 0;
+
+/* Was sich beim Ziehen mitbewegt: das Blatt selbst oder die ganze Dateiansicht. */
+function panelOf(backdrop) {
+  return backdrop.querySelector(".modal, .sheet, .viewer");
+}
+
+/* Die Fläche, die in sich rollt — nur wenn sie oben steht, darf gezogen werden.
+   Im Auswahl-Blatt ist es die Liste (.sheet-options): ohne sie gälte das Blatt
+   immer als „oben“, und ein Wisch nach unten würde es schließen, statt die
+   gescrollte Liste zurück nach oben zu rollen. */
+function bodyOf(backdrop) {
+  return backdrop.querySelector(".modal-body, .viewer-stage, .sheet-options");
+}
+
+/** Reste einer Ziehbewegung entfernen, damit das Blatt beim nächsten Öffnen sauber steht. */
+export function clearModalPull(backdrop) {
+  if (!backdrop) return;
+  const panel = panelOf(backdrop);
+  if (panel) {
+    panel.style.transform = "";
+    panel.style.transition = "";
+  }
+  backdrop.style.removeProperty("--modal-dim");
+  const body = bodyOf(backdrop);
+  if (body) body.style.overflow = "";
+}
+
+/*
+ * Nach dem Zuziehen aufräumen — aber erst, wenn das Blatt wirklich weg ist.
+ * Viele Blätter schließen über den Verlauf (history.back / history.go), und
+ * der meldet sich erst einen Augenblick später. Würde das Blatt vorher
+ * zurückgesetzt, stünde es für diesen Augenblick wieder offen da (z.B. eine
+ * Unterseite der Einstellungen blitzt auf). Bis dahin bleibt es unten und
+ * der Hintergrund ist schon hell.
+ */
+function settleAfterClose(backdrop) {
+  const finish = () => {
+    clearModalPull(backdrop);
+    delete backdrop.dataset.dismissing;
+  };
+  if (backdrop.hidden) {
+    finish();
+    return;
+  }
+  backdrop.style.setProperty("--modal-dim", "0");
+  /* MutationObserver: meldet, sobald das Blatt sein hidden bekommt — ohne
+     in jedem Bild nachzufragen. */
+  const watcher = new MutationObserver(() => {
+    if (!backdrop.hidden) return;
+    watcher.disconnect();
+    clearTimeout(fallback);
+    finish();
+  });
+  watcher.observe(backdrop, { attributes: true, attributeFilter: ["hidden"] });
+  /* Bleibt das Blatt doch offen (Schließen abgelehnt), steht es wieder sauber da. */
+  const fallback = setTimeout(() => {
+    watcher.disconnect();
+    finish();
+  }, settleTimeoutMs);
+}
+
+/** Eine begonnene Ziehbewegung abbrechen — z.B. wenn ein zweiter Finger zum Zoomen dazukommt. */
+export function cancelModalPull() {
+  if (!pull) return;
+  const { backdrop, active } = pull;
+  pull = null;
+  if (active) clearModalPull(backdrop);
+}
+
+/** Ein Blatt für die Ziehgeste anmelden. */
+export function bindModalPull(backdrop, closeFn) {
+  backdrop.addEventListener("pointerdown", (event) => {
+    if (backdrop.hidden || event.button) return;
+    if (backdrop.dataset.dismissing === "1") return;
+    /* Das Blatt ist eine ganze Seite: sie schließt über den Pfeil, nicht durch Ziehen */
+    if (backdrop.hasAttribute("data-android-page")) return;
+    /* Liegt das Auswahl-Blatt darüber, gehört die Geste ihm */
+    if (!dom.sheet.hidden && backdrop !== dom.sheet) return;
+    /* Die Rollen des Datum-Blatts rollen selbst; nur daneben zieht man das Blatt zu.
+       In der Dateiansicht bleiben Knöpfe, Namensfeld, die Leiste unten und die
+       eigenen Bedienelemente von Video, Ton und PDF von der Geste verschont. */
+    if (event.target.closest(".modal-close, .profile-save, .profile-avatar-edit, .date-wheels")) return;
+    if (event.target.closest(".viewer-btn, .viewer-title, .viewer-foot, .viewer-video, .viewer-audio, .viewer-pdf, .viewer-open")) return;
+    /* Vergrößert schiebt ein Finger das Bild (src/features/media/viewer-zoom.js) */
+    if (event.target.closest(".viewer-stage[data-zoomed]")) return;
+    if (event.target === backdrop) return;
+
+    const body = bodyOf(backdrop);
+    const head = backdrop.querySelector(".modal-head, .viewer-head");
+    const inHead = Boolean(head && head.contains(event.target));
+    const atTop = !body || body.scrollTop <= 0;
+    if (!inHead && !atTop) return;
+
+    pull = {
+      backdrop,
+      closeFn,
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startX: event.clientX,
+      fromHead: inHead,
+      active: false,
+      y: 0,
+    };
+  });
+}
+
+function onMove(event) {
+  if (!pull || event.pointerId !== pull.pointerId) return;
+  const { backdrop } = pull;
+  if (backdrop.hidden) {
+    pull = null;
+    return;
+  }
+  const panel = panelOf(backdrop);
+  const body = bodyOf(backdrop);
+  const dy = event.clientY - pull.startY;
+  const dx = event.clientX - pull.startX;
+
+  if (!pull.active) {
+    if (Math.abs(dx) < startSlack && Math.abs(dy) < startSlack) return;
+    /* Nur nach unten und deutlicher senkrecht als waagerecht */
+    if (dy <= 0 || Math.abs(dy) <= Math.abs(dx)) {
+      pull = null;
+      return;
+    }
+    if (!pull.fromHead && body && body.scrollTop > 0) {
+      pull = null;
+      return;
+    }
+    pull.active = true;
+    ignoreClicksUntil = Date.now() + 500;
+    if (panel) panel.style.transition = "none";
+    if (body) body.style.overflow = "hidden";
+    try {
+      backdrop.setPointerCapture(event.pointerId);
+    } catch (error) {
+      /* ohne Capture folgt die Bewegung nur, solange der Finger auf dem Blatt bleibt */
+    }
+  }
+
+  pull.y = Math.max(0, dy);
+  /* transform: verschiebt das Blatt, ohne die Seite neu zu berechnen — nur so bleibt es flüssig */
+  if (panel) panel.style.transform = `translateY(${pull.y}px)`;
+  backdrop.style.setProperty("--modal-dim", String(Math.max(0.15, 1 - pull.y / dimDistance)));
+  if (event.cancelable) event.preventDefault();
+}
+
+function onEnd(event) {
+  if (!pull || (event && event.pointerId !== pull.pointerId)) return;
+  const { backdrop, closeFn, active, y } = pull;
+  const panel = panelOf(backdrop);
+  const body = bodyOf(backdrop);
+  if (body) body.style.overflow = "";
+  pull = null;
+  if (!active || backdrop.dataset.dismissing === "1") return;
+
+  ignoreClicksUntil = Date.now() + closeAnimationMs + 220;
+  const threshold = cssNumber("--modal-dismiss-pull", 100);
+
+  if (y >= threshold) {
+    backdrop.dataset.dismissing = "1";
+    if (panel) {
+      panel.style.transition = "transform 0.2s ease";
+      panel.style.transform = `translateY(${Math.max(panel.offsetHeight, y + 80)}px)`;
+    }
+    setTimeout(() => {
+      closeFn();
+      settleAfterClose(backdrop);
+    }, closeAnimationMs);
+    return;
+  }
+
+  if (panel) {
+    panel.style.transition = "transform 0.2s ease";
+    panel.style.transform = "";
+    backdrop.style.setProperty("--modal-dim", "1");
+    setTimeout(() => {
+      panel.style.transition = "";
+      backdrop.style.removeProperty("--modal-dim");
+    }, 200);
+  }
+}
+
+/* Auf Touch-Geräten beginnt der Browser beim Wischen über rollbare Zeilen sonst
+   selbst zu rollen und bricht die Zeiger-Ereignisse mit pointercancel ab: das
+   Blatt zuckt kurz und springt zurück. Nur ein abgebrochenes touchmove hält das
+   eigene Rollen des Browsers zurück — preventDefault auf pointermove reicht nicht. */
+function onTouchMove(event) {
+  if (!pull || event.touches.length !== 1) return;
+  const touch = event.touches[0];
+  const dy = touch.clientY - pull.startY;
+  const dx = touch.clientX - pull.startX;
+  if (!pull.active && (dy <= 0 || Math.abs(dy) < Math.abs(dx))) return;
+  if (event.cancelable) event.preventDefault();
+}
+
+/** Die Geste aktivieren. Wird einmal beim Start aufgerufen. */
+export function initModalPull() {
+  window.addEventListener("pointermove", onMove, { passive: false });
+  window.addEventListener("touchmove", onTouchMove, { passive: false });
+  window.addEventListener("pointerup", onEnd);
+  window.addEventListener("pointercancel", onEnd);
+  /* Nach dem Ziehen kommt oft noch ein Klick: der würde sonst hinter dem Blatt etwas öffnen. */
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (Date.now() >= ignoreClicksUntil) return;
+      event.preventDefault();
+      event.stopPropagation();
+    },
+    true
+  );
+}

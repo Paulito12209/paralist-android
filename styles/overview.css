@@ -1,0 +1,338 @@
+/*
+ * Startseite: die Übersichtskarten (je Seite vier), die Zeile „Projekte“
+ * und die Pillen darunter — dieselbe Pillenzeile nutzen die Seite
+ * Arbeitsbereiche und die Aufgaben-Seite. Schieben der Kartenseiten,
+ * abgeschaltete Karten und der Pfeil neben „Projekte“: styles/overview-more.css.
+ * Pfad: styles/overview.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --overview-card-bg / --card / --shadow / --radius-lg   -> Aussehen der Karten
+ * --inbox-icon-color                -> Eingang-Icon
+ * --star-color                      -> Favoriten-Stern
+ * --resource-icon-color             -> Würfel-Icon
+ * --workspace-icon-color            -> Stapel-Icon der Karte Arbeitsbereiche
+ * --tab-pill-size                   -> Schriftgröße der Tab-Pillen
+ * --tab-pills-btn-gap               -> Abstand zwischen Trennlinie und Plus-Knopf
+ * --tab-pills-fade                  -> Breite des Ausblendens links der Trennlinie
+ * --tab-pills-tools-width           -> Platz rechts für Ausblenden, Linie und Plus-Knopf
+ * --content-side                    -> Abstand des Inhalts zum Rand; so weit brechen
+                                        die Pillen nach beiden Seiten aus
+ * --icon-folder-plus-width / -height -> Größe des Ordner-Plus-Icons
+ * --avatar-btn-bg                    -> Farbe des Kartenzählers
+ * --icon-soft                        -> abgeschwächte Farbe von Ordner-Plus-Icon und Plus-Icon der Tab-Pille
+ * --workspace-section-gap           -> Abstand zwischen Karten und „Projekte“
+ * --muted                           -> Satz, wenn eine Projekt-Ansicht nichts findet
+ * --workspace-head-gap              -> Abstand über den Pillen
+ 
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+*/
+
+/* Zwei Kartenseiten nebeneinander, waagerecht zu schieben; das Schieben und
+   Einrasten steht in styles/overview-more.css. */
+.overview-grid {
+  display: flex;
+  gap: 12px;
+  /* Negativer Rand + Padding: die Schatten der Cards brechen links/rechts über den
+     content-Padding hinaus, damit sie nicht vom overflow:hidden abgeschnitten werden */
+  margin-left: -12px;
+  margin-right: -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* Eine Kartenseite: vier Karten im Raster 2 × 2 */
+.overview-page {
+  display: grid;
+  /* minmax(0, 1fr): sonst darf eine Spalte mit langem Wort („Ressourcen“) breiter werden als die andere */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.overview-card {
+  min-width: 0;
+  /* min-width: die Kachel darf schmaler als ihr Text werden, damit beide Spalten gleich bleiben */
+  background: var(--overview-card-bg, var(--card));
+  border-radius: var(--radius-lg);
+  min-height: 112px;
+  padding: 12px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.overview-card:active {
+  transform: scale(0.98);
+}
+
+.card-icon {
+  width: 26px;
+  height: 26px;
+  color: var(--chevron);
+}
+
+/* Eingang-Icon auf der Übersichtskarte */
+.card-icon-inbox {
+  color: var(--inbox-icon-color);
+}
+
+/* Goldene Stern-Kontur auf der Favoriten-Karte */
+.card-icon-star {
+  color: var(--star-color);
+}
+
+/* Würfel-Icon auf der Ressourcen-Karte */
+.card-icon-cube {
+  color: var(--resource-icon-color);
+}
+
+/* Stapel-Icon auf der Karte Arbeitsbereiche */
+.card-icon-layers {
+  color: var(--workspace-icon-color);
+}
+
+.card-label {
+  display: flex;
+  flex-wrap: nowrap;
+  /* nowrap: Titel und Zähler bleiben in einer Zeile */
+  align-items: baseline;
+  gap: 0.35em;
+  max-width: 100%;
+  min-width: 0;
+  /* min-width: Flex-Kind darf schmaler werden, sonst kein Ellipsis */
+}
+
+/* Titel schrumpft und bekommt „…“, der Zähler daneben bleibt vollständig */
+.card-title {
+  min-width: 0;
+  overflow: hidden;
+  /* overflow: noetig fuer text-overflow */
+  text-overflow: ellipsis;
+  /* text-overflow: langer Titel wird zu „Ressour…“ */
+  white-space: nowrap;
+  /* white-space: kein Umbruch in eine zweite Zeile */
+}
+
+.card-count {
+  flex: 0 0 auto;
+  /* Zähler darf nie schrumpfen oder umbrechen */
+  color: var(--avatar-btn-bg);
+  font-weight: 500;
+}
+
+/* Abstand zwischen den Karten und der Zeile „Arbeitsbereiche“;
+   -8px fest abgezogen, damit der Abstand hier enger wirkt als der
+   Standardabstand aus --workspace-section-gap (der Wert selbst bleibt
+   unangetastet, da er auch anderswo als neutraler Grundabstand dient).
+   Die Seitenlinie (styles/overview-more.css) steht genau in der Mitte:
+   je die Hälfte des Abstands über und unter ihr. */
+.overview-pager {
+  margin-top: calc((var(--workspace-section-gap) - 8px) / 2);
+}
+
+.overview-pager+.section-head {
+  margin-top: calc((var(--workspace-section-gap) - 8px) / 2);
+}
+
+.add-btn {
+  width: 32px;
+  height: 32px;
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+}
+
+.add-btn .icon {
+  width: var(--icon-folder-plus-width);
+  height: var(--icon-folder-plus-height);
+  color: var(--icon-soft);
+}
+
+.add-btn:active {
+  opacity: 0.55;
+}
+
+/* Tab-Zeile: Pillen scrollen, Plus-Button bleibt rechts.
+   Der Streifen selbst bleibt auf der Breite des Inhalts — nur die scrollenden
+   Pillen darin brechen seitlich aus. */
+.tab-pills-row {
+  display: flex;
+  align-items: center;
+  position: relative;
+  /* position: damit Linie und Button über den Tabs liegen können */
+  margin: 0 0 6px;
+  min-height: 32px;
+  /* min-height: Zeile bleibt so hoch wie der Plus-Button */
+}
+
+/*
+ * Eine Leiste mit Pillen — über den Arbeitsbereichen, auf den Medien, den
+ * Ressourcen und über einem Eintrag. Sie reicht mit negativen Außenabständen
+ * über den Seitenrand des Inhalts hinaus, damit die Pillen beim Schieben bis
+ * an den Geräterand laufen, statt am Rand wie abgeschnitten zu enden. Der
+ * gleich große Innenabstand setzt die erste Pille wieder auf die Fluchtlinie
+ * des übrigen Inhalts; die 2px sind der Luftraum, den eine Pille beim Antippen
+ * braucht.
+ */
+.tab-pills {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: calc(-1 * var(--content-side));
+  margin-right: calc(-1 * var(--content-side));
+  padding: 0 calc(var(--content-side) + 2px);
+  overflow-x: auto;
+  /* overflow: mehr Pillen, als nebeneinander passen, schiebt man seitlich */
+  overscroll-behavior-x: contain; /* am Ende der Pillen wird nicht die Seite darunter mitgezogen */
+  scroll-padding-inline: var(--content-side); /* rollt das Wischen eine Pille ins Bild, hält sie so viel Abstand zum Rand */
+  scrollbar-width: none;
+}
+
+/* In der Tab-Zeile füllt die Leiste den Streifen und wächst dabei über beide
+   Ränder hinaus; ohne flex bliebe sie auf der Breite des Inhalts stehen. */
+.tab-pills-row .tab-pills {
+  flex: 1;
+  min-width: 0;
+  /* Platz rechts, damit der letzte Tab vor Linie und Button sichtbar bleiben kann */
+  padding-right: var(--tab-pills-tools-width);
+  scroll-padding-right: var(--tab-pills-tools-width); /* ins Bild gerollte Tabs bleiben links von Linie und Knopf */
+}
+
+/* Rechts fest: erst Fade, dann Linie, dann Plus */
+.tab-pills-tools {
+  position: absolute;
+  /* position: bleibt rechts kleben, Tabs laufen darunter durch */
+  right: calc(-1 * var(--content-side));
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+  /* z-index: hält Linie und Button über den scrollenden Tabs */
+}
+
+.tab-pills-fade {
+  width: var(--tab-pills-fade);
+  height: 100%;
+  background: linear-gradient(to right, transparent, var(--bg));
+  pointer-events: none;
+  /* pointer-events: Klicks sollen die Tabs im Fade noch treffen */
+}
+
+/* Der Plus-Knopf steht weiter am Rand des Inhalts; der Innenabstand deckt nur
+   den Streifen bis zum Geräterand ab, damit dort keine Pille hervorschaut. */
+.tab-pills-end {
+  display: flex;
+  align-items: center;
+  gap: var(--tab-pills-btn-gap);
+  height: 100%;
+  padding-right: var(--content-side);
+  background: var(--bg);
+}
+
+.tab-pills-split {
+  width: 1px;
+  height: 16px;
+  background: var(--line);
+}
+
+.tab-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-pill {
+  padding: 8px 18px;
+  border-radius: 999px;
+  /* border-radius: macht aus dem Knopf eine Pille */
+  font-size: var(--tab-pill-size);
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  /* user-select: Text soll beim gedrückt Halten nicht markiert werden */
+  -webkit-touch-callout: none;
+  /* -webkit-touch-callout: verhindert das iPhone-Menü über unserem eigenen */
+}
+
+.tab-pill-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  /* Icon soll neben dem Namen nicht schrumpfen */
+}
+
+/* Der ausgewählte Tab bekommt als einziger einen Hintergrund - wie eine Karte,
+   nicht wie der Reiter unten (der nutzt bewusst die andere Akzentfarbe,
+   siehe --tab-pill-active-bg in styles/navigation.css) */
+.tab-pill.is-active {
+  background: var(--card);
+  color: var(--text);
+}
+
+.tab-pill:active {
+  opacity: 0.55;
+}
+
+/* Beim Umbenennen steht an derselben Stelle ein Eingabefeld */
+.tab-pill-input {
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  /* width: startet schmal; src/features/overview/tabs.js setzt die Breite nach dem Text */
+  width: 1px;
+  min-width: 1px;
+  /* field-sizing: folgt dem Text, falls JS die Breite noch nicht gesetzt hat */
+  field-sizing: content;
+  font-size: var(--tab-pill-size);
+  font-weight: 600;
+  user-select: text;
+  /* user-select: im Eingabefeld soll man den Namen markieren können */
+}
+
+.tab-pill-add {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.tab-pill-add .icon {
+  width: 16px;
+  height: 16px;
+  color: var(--icon-soft);
+}
+
+.tab-pill-add:active {
+  opacity: 0.55;
+}
+
+/* „Neue Ansicht“ neben dem Plus steht erst in styles/android-tab-snap.css */
+.tab-pill-add-text {
+  display: none;
+}
+
+/* Die unsichtbare Marke hinter dem Plus dient nur dem Einrasten in der
+   Android-Fassung (styles/android-tab-snap.css); sonst nimmt sie keinen Platz */
+.tab-pill-add-edge {
+  display: none;
+}
+/* Eine Projekt-Ansicht findet nichts: ein Satz statt einer leeren Fläche */
+.project-empty-note {
+  padding: 14px 2px;
+  color: var(--muted);
+  font-size: 15px;
+}

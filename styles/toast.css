@@ -1,0 +1,119 @@
+/*
+ * Die kurze Meldung über der Navigation, nachdem etwas angelegt wurde.
+ * Pfad: styles/toast.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --toast-radius     -> Rundung der Meldung
+ * --toast-gap        -> Abstand zur Navigation darunter
+ * --toast-anim       -> wie lange die Meldung heraufgleitet
+ * --toast-rise       -> aus welcher Tiefe sie dabei kommt
+ * --toast-hit-grow   -> wie weit die Tippfläche des Knopfes über ihn hinausgeht
+ * --card             -> Fläche der Meldung, wie bei der Navigation darunter
+ * --text             -> Schrift der Meldung
+ * --xp-done          -> Farbe des Hakens links, solange der Aufrufer nichts sagt
+ * --toast-icon       -> setzt src/ui/toast.js je Meldung, z.B. Gold beim Stufenaufstieg
+ * --xp-created       -> Farbe der Punkte-Angabe
+ * --link-color       -> Farbe des Knopfes rechts
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+*/
+
+.toast-host {
+  margin-bottom: var(--toast-gap);
+}
+
+.toast-host[hidden] {
+  display: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--toast-radius); /* border-radius: weiche Ecken wie bei der Navigation darunter */
+  background: var(--card);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* Beim Auftauchen gleitet die Meldung von unten herauf. Die Regel hängt an
+   `:not([hidden])`, weil eine Animation von selbst neu startet, sobald ein
+   Element aus display:none wieder auftaucht. */
+@keyframes toast-in {
+  from {
+    transform: translateY(var(--toast-rise));
+    opacity: 0;
+  }
+}
+
+.toast-host:not([hidden]) .toast {
+  animation: toast-in var(--toast-anim) ease-out;
+}
+
+.toast-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  color: var(--toast-icon, var(--xp-done));
+}
+
+.toast-title {
+  flex: 1;
+  min-width: 0; /* min-width: ohne das schrumpft der Text nicht und der Knopf rutscht heraus */
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toast-note {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--xp-created);
+}
+
+.toast-action {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--link-color);
+  position: relative; /* position: Anker für die größere Tippfläche darunter */
+}
+
+/* Der Knopf ist nur so hoch wie seine Schrift — zum Tippen wäre das zu wenig.
+   Diese unsichtbare Fläche liegt darüber und greift nach allen Seiten darüber
+   hinaus, sodass das Tippziel die von Material 3 verlangten 48dp erreicht,
+   ohne dass sich das Layout ändert. Dieselbe Lösung wie bei den Reitern der
+   Navigation (.tab-btn::after in styles/navigation.css). */
+.toast-action::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--toast-hit-grow));
+}
+
+.toast-action-icon {
+  width: 14px;
+  height: 14px;
+  transform: rotate(45deg); /* transform: aus dem Pfeil nach oben wird der Pfeil, der aus der Meldung hinausführt */
+}
+
+.toast-action:active {
+  opacity: 0.55;
+}
+
+/* Dunkelmodus: Toast-Schatten invertieren (weiß statt schwarz) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .toast {
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.07), 0 0 32px rgba(255, 255, 255, 0.13);
+  }
+}
+:root[data-theme="dark"] .toast {
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.07), 0 0 32px rgba(255, 255, 255, 0.13);
+}

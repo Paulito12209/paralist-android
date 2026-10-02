@@ -1,0 +1,131 @@
+/*
+ * Lesezeichen-Seite: die Pillen und die Zeilen mit großer Kachel links, Text
+ * rechts und Pfeil am Ende. Den großen Kopf mit Icon zeichnet
+ * styles/page-hero.css für alle Sammlungen.
+ * Gebaut wird die Seite in src/features/bookmarks/bookmarks.js.
+ * Pfad: styles/bookmarks.css
+ *
+ * ANPASSBARE WERTE (in styles/tokens-pages.css)
+ * -----------------------------------
+ * --bookmark-color  -> Lila der Kachel ohne Bild
+ * --bookmark-thumb  -> Kantenlänge der Kachel links in einer Zeile
+ *
+ * Direkt bei ihrer Regel:
+ * .bookmark-title font-size    -> Name in einer Zeile (17px, halbfett)
+ * .bookmark-site / -source     -> Website und Herkunft darunter (14px, grau)
+ *
+ * Weitere Farben: --text, --muted, --line, --icon-soft, --overview-card-bg,
+ * --embed-tint (styles/tokens.css und styles/tokens-pages.css).
+ */
+
+.bookmark-pills {
+  margin-bottom: 8px;
+}
+
+/* ---------- Zeilen ---------- */
+
+.bookmark-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 0;
+  text-align: left;
+  color: inherit;
+  border-bottom: 0.5px solid var(--line);
+}
+
+.bookmark-row:last-child {
+  border-bottom: 0;
+}
+
+.bookmark-row:active {
+  opacity: 0.6;
+}
+
+.bookmark-thumb {
+  position: relative; /* position: Halt für den Abspiel-Knopf mitten auf dem Vorschaubild */
+  flex: 0 0 var(--bookmark-thumb);
+  height: var(--bookmark-thumb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--overview-card-bg);
+  color: var(--bookmark-color);
+}
+
+.bookmark-thumb .icon {
+  width: 32px;
+  height: 32px;
+}
+
+.bookmark-thumb.is-video img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* object-fit: das Vorschaubild füllt das Quadrat, der Rand wird abgeschnitten */
+}
+
+/* Favicon auf einer zarten Fläche in seiner eigenen Farbe, wie im Inhalt eines Eintrags */
+.bookmark-thumb.is-logo {
+  background: color-mix(in srgb, var(--embed-color) var(--embed-tint), var(--overview-card-bg));
+}
+
+.bookmark-thumb.is-logo img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.bookmark-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bookmark-title {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  display: -webkit-box; /* -webkit-box mit line-clamp: lange Namen enden nach zwei Zeilen mit „…“ */
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.bookmark-site,
+.bookmark-source {
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis; /* text-overflow: zu lange Adressen und Titel enden mit „…“ */
+  white-space: nowrap;
+}
+
+.bookmark-source {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.bookmark-source span {
+  overflow: hidden;
+  text-overflow: ellipsis; /* text-overflow: der Eintragsname wird gekürzt, das Icon davor bleibt */
+}
+
+.bookmark-source .icon {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+}
+
+.bookmark-chevron {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: var(--icon-soft);
+}

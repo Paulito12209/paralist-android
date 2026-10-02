@@ -1,0 +1,332 @@
+/*
+ * Die Einstellungs-Karte einer Ansicht (src/ui/view-panel.js): auf der
+ * Aufgaben-Seite „Ansicht“ (src/features/tasks/tasks-settings.js),
+ * bei den Projekten auf Übersicht und Seite Projekte „Ansicht“
+ * (src/features/overview/project-settings.js). Karte, Kopf und
+ * Zeilen sehen aus wie die Karte „Details“ einer Eintragsseite
+ * (styles/entry-details.css). Anders als dort liegt sie nicht in der Seite,
+ * sondern als eigene Ebene über der Liste und unter der Navigation:
+ * eingeklappt schaut nur der Kopf hervor, ausgeklappt (Klasse is-expanded)
+ * steht die ganze Karte über der Navigation. Dazu kommen die Zutaten, die es
+ * bei „Details“ nicht gibt: das Segment Liste | Board bzw. Dringlichkeit |
+ * Status, der Schalter und die gesperrte Filter-Zeile mit dem ⓘ.
+ * Pfad: styles/tasks-settings.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens-pages.css, außer wo genannt)
+ * -----------------------------------
+ * --tasks-switch-w / --tasks-switch-h -> Größe des Schalters
+ * --tasks-seg-h              -> Höhe des Segments (und seiner Knöpfe)
+ * --tasks-panel-gap          -> Luft zwischen ausgeklappter Karte und Navigation darunter;
+ *                               eingeklappt steht der Kopf direkt auf der Navigation, wie „Details“
+ * --tasks-panel-slide        -> wie schnell die Karte aus- und einklappt
+ * --details-head-h           -> Höhe des Kopfs — so viel schaut eingeklappt hervor
+ * --nav-height / --nav-bottom -> Lage der Navigation, auf der die Karte sitzt (styles/tokens.css)
+ * --content-side             -> seitlicher Rand der Karte (styles/tokens.css)
+ * --tab-pill-active-bg       -> Fläche hinter dem Segment und Schalter „aus“ (styles/tokens.css)
+ * --bg                       -> Fläche des gewählten Segment-Knopfs (styles/tokens.css)
+ * --add                      -> Schalter „an“ (styles/tokens.css)
+ * --text / --muted           -> Schrift im Segment, gewählt und nicht gewählt
+ * --icon-soft                -> das ⓘ neben der gesperrten Filter-Zeile
+ * --tab-pill-active-bg       -> Fläche eines Filter-Chips
+ * --chevron                  -> der Strich zwischen „nicht“ und der Zahl im Zähler (styles/tokens.css)
+ *
+ * Direkt bei ihrer Regel:
+ * .tasks-filter-chip height / font-size  -> Höhe und Schrift der Filter-Chips (26px, 13px)
+ * .tasks-filter-count height / font-size -> Höhe und Schrift des Zählers im Chip (18px, 11px)
+ * .tasks-filter-count color-mix 14%      -> wie kräftig der Zähler im Chip hinterlegt ist
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+*/
+
+/* ---------- Die Ebene über der Liste ---------- */
+
+/* Jede Karte nur auf ihrer Seite: is-tasks setzt src/ui/views.js, is-projects
+   src/features/overview/projects.js (Übersicht am Handy und Seite Projekte),
+   is-collection src/features/overview/collection-panel.js (die übrigen Sammlungen). */
+.view-panel {
+  display: none;
+  position: absolute; /* position: liegt fest über der Liste, statt mit ihr zu scrollen */
+  left: var(--content-side);
+  right: var(--content-side);
+  bottom: calc(var(--nav-height) + var(--nav-bottom) + var(--safe-bottom) + var(--tasks-panel-gap));
+  z-index: 5; /* z-index: über der Seite (0), unter Verlauf (10) und Navigation (20) */
+  max-height: 70%; /* max-height: auch mit allen Zeilen bleibt oben Luft */
+  margin: 0;
+  padding-bottom: 12px;
+  overflow: hidden; /* overflow: sehr niedrige Fenster schneiden die Zeilen ab statt die Karte zu sprengen */
+  /* transform: eingeklappt rutscht alles bis auf den Kopf hinter die Navigation.
+     Die Luft zur Navigation fällt dabei weg: der Kopf endet genau an ihrer
+     Oberkante, auf derselben Höhe wie „Details“ auf einer Eintragsseite
+     (src/features/entry/entry-fold.js) — beim Wechsel springt nichts. */
+  transform: translateY(calc(100% - var(--details-head-h) + var(--tasks-panel-gap)));
+  transition: transform var(--tasks-panel-slide) cubic-bezier(0.2, 0.8, 0.2, 1); /* transition: weiches Aus- und Einklappen */
+}
+
+body.is-tasks .tasks-panel,
+body.is-projects .project-panel,
+body.is-collection .collection-panel {
+  display: block;
+}
+
+.view-panel.is-expanded {
+  transform: none;
+}
+
+/* Beim Ziehen folgt die Karte dem Finger, ohne nachzuziehen */
+.view-panel.is-dragging {
+  transition: none;
+}
+
+/* Beim Anlegen braucht das Eingabefeld den Platz über der Navigation; beim
+   Schreiben auf Touch-Geräten tritt die Navigation zurück (styles/navigation.css)
+   — die Karte ebenso. :has fragt, ob das Eingabefeld offen ist. */
+body:has(.nav-shell.is-composing) .view-panel {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  body.is-writing .view-panel {
+    visibility: hidden; /* visibility: wie die Navigation, ohne dass sich etwas verschiebt */
+  }
+}
+
+/* Die ganze Karte ist Griff (src/ui/view-panel.js): ziehen statt die Seite zu
+   bewegen. Die Karte scrollt nie in sich (overflow: hidden oben), es geht also nichts verloren. */
+.view-panel {
+  touch-action: none; /* touch-action: der Browser soll das Ziehen nicht selbst als Geste nehmen */
+}
+
+/* Schleier hinter der Karte und das Symbol, das sie heraufholt: nur im Blatt
+   der Android-Fassung (styles/android-sheet.css), sonst ohne Wirkung */
+.view-panel-scrim,
+.view-panel-btn {
+  display: none;
+}
+
+/* Knöpfe im Kopf links vom Symbol, z.B. „Heute“ im Kalender — ohne Knöpfe
+   nimmt der Behälter keinen Platz ein */
+.view-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.view-panel-toggle .icon {
+  transition: transform var(--tasks-panel-slide) ease; /* transition: das Symbol dreht sich mit */
+}
+
+/* Ausgeklappt zeigt der Pfeil nach unten — hier geht es wieder zu */
+.view-panel.is-expanded .view-panel-toggle .icon {
+  transform: rotate(180deg); /* transform: Pfeil nach unten */
+}
+
+/* Eingeklappt bleiben die Zeilen leer — neben der runden Navigation sähe man
+   sonst halbe Zeilen. Die Zeilen werden beim Neuzeichnen ersetzt, die Karte
+   nicht: darum bleibt der Inhalt sichtbar, während man etwas umstellt. */
+.view-panel.is-expanded .details-list,
+.view-panel.is-dragging .details-list {
+  opacity: 1;
+}
+
+/* Die Liste endet über dem eingeklappten Kopf, nicht dahinter. Übersicht und
+   Seite Projekte enden genau an ihm: styles/view-end.css */
+#view-tasks {
+  padding-bottom: var(--details-head-h);
+}
+
+/* Die Zeilen der Karte sind Knöpfe oder Zeilen mit Steuerung rechts —
+   beide gleich hoch und mittig ausgerichtet */
+.tasks-settings .details-row {
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  text-align: left;
+}
+
+/* ---------- Segment: Liste | Board, Dringlichkeit | Status ---------- */
+
+.tasks-seg {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 999px; /* border-radius: macht aus den Knöpfen eine Pille */
+  background: var(--tab-pill-active-bg);
+}
+
+.tasks-seg-btn {
+  display: grid;
+  place-items: center;
+  min-width: calc(var(--tasks-seg-h) - 4px);
+  height: calc(var(--tasks-seg-h) - 4px);
+  padding: 0 10px;
+  border-radius: 999px; /* border-radius: der gefüllte Knopf ist rund wie die Pille */
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tasks-seg-btn .icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Haken und Wort neben dem Icon zeigt nur die Android-Fassung (styles/android-sheet.css) */
+.tasks-seg-check,
+.tasks-seg-btn.has-icon .tasks-seg-label {
+  display: none;
+}
+
+.tasks-seg-btn.is-on {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.tasks-seg-btn:active {
+  opacity: 0.55;
+}
+
+/* ---------- Schalter ---------- */
+
+.tasks-switch {
+  position: relative; /* position: Bezugsrahmen für den Knopf darin */
+  width: var(--tasks-switch-w);
+  height: var(--tasks-switch-h);
+  flex: 0 0 auto;
+  border-radius: 999px; /* border-radius: die Bahn ist rund */
+  background: var(--tab-pill-active-bg);
+  transition: background 0.18s ease; /* transition: die Bahn färbt sich weich */
+}
+
+.tasks-switch-knob {
+  position: absolute; /* position: der Knopf gleitet in der Bahn */
+  top: 3px;
+  left: 3px;
+  width: calc(var(--tasks-switch-h) - 6px);
+  height: calc(var(--tasks-switch-h) - 6px);
+  border-radius: 50%; /* border-radius: ein runder Knopf */
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.18s ease; /* transition: der Knopf gleitet statt zu springen */
+}
+
+.tasks-switch.is-on {
+  background: var(--add);
+}
+
+.tasks-switch.is-on .tasks-switch-knob {
+  transform: translateX(calc(var(--tasks-switch-w) - var(--tasks-switch-h))); /* transform: nach rechts, so weit die Bahn reicht */
+}
+
+/* ---------- Filter-Zeile ---------- */
+
+/* Die Zeile trägt links den Knopf mit Bezeichnung und Wert, rechts das ⓘ */
+.tasks-filter-row {
+  gap: 8px;
+}
+
+.tasks-filter-btn {
+  display: flex;
+  flex: 1;
+  justify-content: space-between; /* justify-content: Bezeichnung links, Wert rechts */
+  gap: 16px;
+  min-width: 0;
+  text-align: left;
+}
+
+.tasks-filter-btn:active {
+  opacity: 0.55;
+}
+
+/* Gesperrt („Alle“): blass, nicht antippbar — der ⓘ daneben erklärt es */
+.tasks-filter-row.is-locked .tasks-filter-btn {
+  opacity: 0.45;
+}
+
+/* Eine ganze Zeile ruht, z.B. „Nur Favoriten“ bei handverlesenen Projekten */
+.details-row.is-muted {
+  opacity: 0.45;
+}
+
+.tasks-info {
+  width: var(--page-tool-size);
+  height: var(--page-tool-size);
+  margin: -8px -8px -8px 0; /* margin: die Tippfläche wächst, ohne die Zeile höher zu machen */
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--icon-soft);
+}
+
+.tasks-info .icon {
+  width: var(--page-tool-icon);
+  height: var(--page-tool-icon);
+}
+
+.tasks-info:active {
+  opacity: 0.55;
+}
+
+/* ---------- Filter-Chips ---------- */
+
+/* Unter der Zeile „Filtern“: die gewählten Werte, sobald etwas gefiltert ist.
+   Die Reihe bricht um, statt die Zeile zu stauchen; ein Tipp öffnet das Blatt. */
+.tasks-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  padding: 0 0 8px;
+}
+
+/* Ein Chip je Abschnitt: Icon, Name, Zähler — neutral, weil ein Abschnitt keine eigene Farbe hat */
+.tasks-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  height: 26px;
+  padding: 0 4px 0 8px;
+  border-radius: 999px;
+  background: var(--tab-pill-active-bg);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tasks-filter-chip:active {
+  opacity: 0.55;
+}
+
+.tasks-filter-chip > span:first-of-type {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis; /* text-overflow: lange Ortsnamen enden mit „…“ */
+  white-space: nowrap;
+}
+
+.tasks-filter-chip .icon {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+}
+
+/* Der Zähler: eine kleine Pille im Chip, „2“ oder „nicht | 1“ */
+.tasks-filter-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  /* color-mix: die Schriftfarbe des Chips, blass hinterlegt — passt so in hell wie dunkel */
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Der Strich zwischen „nicht“ und der Zahl */
+.tasks-filter-sep {
+  width: 1px;
+  height: 10px;
+  background: var(--chevron);
+}

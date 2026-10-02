@@ -1,0 +1,239 @@
+/*
+ * Suchseite: Ergebniszeilen, Abschnittsüberschriften, Tagesmarken, die
+ * Hervorhebung des Treffers im Titel und die Suchen-Pille über der Navigation.
+ * Pfad: styles/search.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens.css)
+ * -----------------------------------
+ * --search-meta-size        -> Schriftgröße der Zeile unter dem Titel
+ * --icon-soft               -> Pfeil rechts
+ * --line                    -> Trennlinien
+ * --muted                   -> Farbe der Abschnittsüberschriften
+ * --search-pill-height      -> Höhe aller drei Knöpfe unten rechts
+ * --search-pill-side        -> Platz links und rechts vom Wort „Suchen“
+ * --search-actions-space    -> Zusätzlicher Platz am Seitenende, solange die Knöpfe zu sehen sind
+ * --search-combo-inset      -> Innenabstand des Gehäuses, dadurch schwebt die Suchen-Pille sichtbar darin
+ * --tab-pill-active-bg      -> Fläche des Suchen-Knopfs im Gehäuse
+ * --search-cancel-color     -> Rot der Schrift des Abbrechen-Knopfs
+ * --search-fade             -> wie schnell die Liste ab der Oberkante der Knöpfe ganz verschwindet
+ * --bg                      -> Farbe, in die die Liste unten ausgeblendet wird
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+*/
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  padding: 10px 2px;
+  border-bottom: 0.5px solid var(--line);
+  /* dünne Linie zwischen den Such-Einträgen */
+  text-align: left;
+}
+
+.search-row .icon:not(.chevron) {
+  width: 22px;
+  height: 22px;
+  color: var(--muted);
+}
+
+.search-copy {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  /* langer Titel soll in der Zeile bleiben und nicht die Icons wegdrücken */
+}
+
+.search-title {
+  font-size: 17px;
+  font-weight: 400;
+}
+
+.search-meta {
+  font-size: var(--search-meta-size);
+  color: var(--muted);
+}
+
+.search-row .chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--icon-soft);
+}
+
+.date-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 4px 2px 2px;
+}
+
+/* Suchen: die Abschnittsueberschriften stehen gross und duenn, die Tagesmarken
+   klein und kraeftig - so verwechselt man „Ergebnisse“ und „Heute“ nicht */
+#view-search .section-head h2 {
+  font-size: 17px;
+  font-weight: 300;
+  color: var(--text);
+}
+
+#view-search .date-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 10px 2px 0;
+}
+
+.search-row-query {
+  min-height: 48px;
+}
+
+.search-hit {
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Extra Platz am Ende der Suche, weil die Knöpfe unten stehen,
+   sonst verdecken sie die letzten Zeilen der Liste. */
+body.is-search .content {
+  padding-bottom: calc(var(--tab-space) + var(--search-actions-space));
+}
+
+/* Auf der Suche tritt die Navigationsleiste ganz zurück: unten stehen nur die
+   drei Knöpfe der Suche, damit die Seite so ruhig bleibt wie das Suchfeld oben. */
+body.is-search .nav-shell {
+  display: none;
+}
+
+/* Unter den Knöpfen läuft die Liste in die Seitenfarbe aus, sonst stünde
+   „Abbrechen“ ohne eigene Fläche direkt auf dem Text der Zeilen und wäre kaum
+   zu lesen. Die Fläche beginnt genau an der Oberkante der Knöpfe — darüber
+   bleibt die Liste unberührt — und wird auf --search-fade Länge nach unten
+   deckend, noch bevor die Schrift von „Abbrechen“ anfängt. z-index 5: über dem
+   Inhalt (0), aber unter dem Verlauf des Dunkelmodus (10, styles/navigation.css)
+   und den Knöpfen (20), so bleibt der Schimmer unten erhalten. */
+body.is-search .device::after {
+  content: "";
+  position: absolute;
+  /* position: liegt fest unten im Gerät, die Liste scrollt darunter durch */
+  left: 0;
+  right: 0;
+  bottom: var(--keyboard-inset);
+  /* bottom: rückt mit der Tastatur nach oben, wie die Knöpfe selbst */
+  height: calc(var(--search-pill-height) + 12px + var(--nav-bottom) + var(--safe-bottom));
+  /* height: vom Geräterand bis zur Oberkante der Knöpfe; die 12px sind der
+     Abstand unter den Knöpfen (margin von .search-actions) */
+  z-index: 5;
+  background: linear-gradient(to bottom, transparent, var(--bg) var(--search-fade));
+  pointer-events: none;
+  /* pointer-events: Tippen soll durch die Fläche hindurch die Zeilen treffen */
+}
+
+/* Die Knöpfe unten: mittig das Gehäuse mit Mikrofon und Suchen, rechts daneben
+   der Abbrechen-Knopf. Sie liegen dort, wo sonst die Navigation steht, und
+   bleiben auch bei offener Tastatur stehen (sie rücken mit ihr nach oben,
+   siehe styles/navigation.css): gerade dann will man abbrechen können. Alle
+   drei sind gleich hoch (--search-pill-height).
+
+   Drei Spalten statt einer Reihe: die leere linke Spalte ist genauso breit wie
+   die rechte mit „Abbrechen“, dadurch steht das Gehäuse in der Mitte der Seite
+   und nicht nur in der Mitte des freien Platzes. Wird es eng (schmale Geräte,
+   „Neue Suche“ statt „Suchen“), gibt zuerst die leere linke Spalte nach und
+   das Gehäuse rückt etwas nach links — „Abbrechen“ bleibt ganz lesbar
+   (minmax(max-content, 1fr)). Erst wenn gar nichts mehr geht, kürzt es sich. */
+.search-actions {
+  display: none;
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 1fr);
+  gap: 12px;
+  /* gap: Abstand zwischen dem Gehäuse und dem Abbrechen-Knopf */
+  margin: 0 0 12px;
+}
+
+body.is-search .search-actions:not([hidden]) {
+  display: grid;
+}
+
+/* Gehäuse: Mikrofon und Suchen teilen sich eine Pille. Ein Innenabstand lässt
+   die Suchen-Fläche als eigene, kleinere Pille im Gehäuse schweben statt bis
+   an dessen Rand zu reichen — so bleibt die Pillenform auch innen sichtbar. */
+.search-combo {
+  grid-column: 2;
+  /* grid-column: die mittlere Spalte, damit das Gehäuse mittig steht */
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: var(--search-pill-height);
+  padding: var(--search-combo-inset);
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.search-combo-btn {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: var(--muted);
+  /* Grundfarbe: gedämpft, wie ein inaktiver Nebenknopf */
+}
+
+.search-combo-btn .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Mikrofon: quadratisches Feld, so hoch wie das eingerückte Innere des Gehäuses. */
+#search-voice {
+  aspect-ratio: 1 / 1;
+}
+
+.search-combo-btn.is-active {
+  background: var(--tab-pill-active-bg);
+  /* dieselbe neutrale Fläche wie bei anderen gewählten Pillen im Rest der App */
+  color: var(--text);
+  padding: 0 var(--search-pill-side);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.search-combo-btn:active {
+  opacity: 0.55;
+}
+
+/* Solange zugehört wird, leuchtet das Mikrofon in der Akzentfarbe. */
+.search-combo-btn.is-listening {
+  color: var(--link-color);
+}
+
+/* Abbrechen: steht rechts neben dem Gehäuse und wird auf schmalen Geräten mit
+   Punkten abgekürzt, statt die Pille aus der Mitte zu drücken. */
+.search-cancel {
+  grid-column: 3;
+  /* grid-column: die rechte Spalte, direkt neben dem Gehäuse */
+  justify-self: start;
+  min-width: 0;
+  /* min-width: erst dadurch darf der Knopf schmaler werden als sein Wort */
+  max-width: 100%;
+  height: var(--search-pill-height);
+  line-height: var(--search-pill-height);
+  /* line-height: legt die Schrift auf dieselbe Mitte wie die Pille daneben */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* text-overflow: aus „Abbrechen“ wird „Abbre…“, wenn der Platz nicht reicht */
+  white-space: nowrap;
+  text-align: left;
+  color: var(--search-cancel-color);
+  font-size: 15px;
+  font-weight: 400;
+  /* normal statt fett: „Suchen“ in der Pille bleibt die Hauptsache, und das schmalere Wort passt neben die mittige Pille */
+}
+
+.search-cancel:active {
+  opacity: 0.55;
+}

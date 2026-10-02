@@ -1,0 +1,287 @@
+/*
+ * Aufgaben-Seite: die Pillen der Ansichten unter dem Titel, die Gruppen der
+ * Liste, die Zeile zum Anlegen durch Tippen in die Fläche und alles, was
+ * eine Aufgabe
+ * gegenüber den übrigen Zeilen (styles/rows.css) zusätzlich hat: den runden
+ * Haken-Knopf mit Ring in der Farbe der Dringlichkeit und die stille
+ * Nebenzeile unter dem Titel. Das Board hat eine eigene Datei,
+ * styles/tasks-board.css.
+ * Pfad: styles/tasks.css
+ *
+ * ANPASSBARE WERTE (alle in styles/tokens-pages.css, außer wo genannt)
+ * -----------------------------------
+ * --page-title-gap      -> Luft zwischen Titel und Pillenzeile, wie auf der Seite Projekte (styles/tokens.css)
+ * --task-tools-gap      -> Abstand zwischen Pillenzeile und Liste
+ * --task-section-gap    -> Luft zwischen zwei Gruppen
+ * --task-check-size     -> Größe des runden Haken-Knopfes
+ * --task-meta-size      -> Schriftgröße der Nebenzeile unter dem Titel
+ * --card                -> Fläche des gesetzten Hakens
+ * --muted               -> Nebenzeile, Anzahl im Gruppenkopf, Geister-Zeile, Hinweis bei leerem Filter
+ * --chevron             -> Ring eines Hakens ohne Dringlichkeitsfarbe
+ * --prio-jetzt          -> Rot eines überfälligen Datums
+ * --xp-done             -> Fläche des gesetzten Hakens
+ * --line                -> Trennlinie unter der Zeile zum Anlegen
+ * --icon-soft           -> Farbe des ⓘ an der Pille „Alle“ (styles/tokens.css)
+ *
+ * Schriftgrößen einzelner Elemente stehen direkt bei ihrer Regel in dieser Datei.
+ * .tab-pill-info .icon width -> Größe des ⓘ an der Pille „Alle“ (16px)
+*/
+
+/* ---------- Zeile unter dem Titel: Pillen der Ansichten ---------- */
+
+/* Der Titel hält zu den Pillen denselben Abstand wie auf der Seite Projekte
+   und jedem Ablageort (.page-title, styles/rows.css) — nicht den größeren der
+   Übersicht, den .screen-title (styles/base.css) sonst vorgibt. */
+#view-tasks .screen-title {
+  margin-bottom: var(--page-title-gap);
+}
+
+/* Dieselbe Zeile wie über den Arbeitsbereichen (.tab-pills-row,
+   styles/overview.css); nur die Luft zur Liste darunter kommt von hier. */
+.tasks-tools .tab-pills-row {
+  margin: 0 0 var(--task-tools-gap);
+}
+
+/* ⓘ in der Pille „Alle“: erklärt, dass sie jeden Ort zeigt; wählt nichts aus */
+.tab-pill-info {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -6px -12px -6px -4px; /* margin: große Tippfläche, ohne dass die Pille höher oder breiter wird */
+  color: var(--icon-soft);
+}
+
+.tab-pill-info .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.tab-pill-info:active {
+  opacity: 0.55;
+}
+
+/* Der runde Knopf ✓+ hinter der Trennlinie: neue Aufgabe */
+.task-add-btn .icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Der Filter lässt nichts übrig: ein Satz statt einer leeren Fläche */
+.task-empty-note {
+  padding: 14px 2px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* ---------- Abschnitte ---------- */
+
+.task-section + .task-section {
+  margin-top: var(--task-section-gap);
+}
+
+/* Dünne Überschrift: Icon in der Farbe des Abschnitts, Name, rechts blass die Anzahl */
+.task-section-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 2px;
+  padding: 0 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.task-section-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--col-color);
+}
+
+.task-section-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-section-count {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* ---------- Runder Haken-Knopf ---------- */
+
+/* Der Ring trägt die Farbe der Dringlichkeit (--task-ring, gesetzt in
+   src/ui/task-status.js) — wie die Ringe um die Tage im Kalender. */
+.task-check {
+  width: var(--task-check-size);
+  height: var(--task-check-size);
+  flex: 0 0 auto;
+  position: relative; /* position: Bezugsrahmen für den Punkt „In Arbeit“ */
+  display: grid;
+  place-items: center;
+  border-radius: 50%; /* border-radius: macht aus dem Knopf einen Kreis */
+  box-shadow: inset 0 0 0 1.5px var(--task-ring, var(--chevron)); /* box-shadow statt border: der Ring bleibt innen, die Größe stimmt */
+  color: transparent; /* der Haken ist erst zu sehen, wenn die Aufgabe erledigt ist */
+  transition: color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+/* In Arbeit: ein Punkt im Ring — angefangen, noch nicht fertig */
+.task-check.is-busy::after {
+  content: "";
+  position: absolute; /* position: der Punkt liegt mitten im Ring */
+  inset: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%; /* border-radius: ein runder Punkt */
+  background: var(--task-ring, var(--chevron));
+  transform: translate(-50%, -50%); /* transform: von der Mitte aus zentriert */
+}
+
+.task-check.is-done {
+  background: var(--xp-done);
+  box-shadow: inset 0 0 0 1.5px var(--xp-done);
+  color: var(--card);
+}
+
+.task-check-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.task-check:active {
+  opacity: 0.6;
+}
+
+/* ---------- Zeile in der Liste ---------- */
+
+/* Der Haken steht als eigener Knopf neben der Zeile, damit ein Tipp darauf
+   abhakt statt den Editor zu öffnen. Die Trennlinie zeichnet .swipe::after in
+   styles/swipe-rows.css — dort läuft sie über die ganze Zeile, Haken eingeschlossen. */
+.task-rows .swipe-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-row {
+  align-items: center;
+  border-bottom: 0;
+}
+
+/* .workspace-row span macht jedes span breit — in einer Aufgabe soll das nur
+   der mittlere Block sein, nicht jede Beschriftung darin. */
+.task-row span {
+  flex: 0 1 auto;
+}
+
+/* Der mittlere Block nimmt den freien Platz, damit der Pfeil am rechten Rand
+   steht wie bei Projekten und Arbeitsbereichen. „.task-row“ davor ist nötig:
+   „.task-row span“ oben wiegt sonst schwerer und hielte ihn schmal. */
+.task-row .task-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.task-title {
+  overflow: hidden; /* overflow: nötig für text-overflow */
+  text-overflow: ellipsis; /* text-overflow: lange Titel werden gekürzt statt umgebrochen */
+  white-space: nowrap;
+}
+
+/* Erledigt: durchgestrichen und blasser — in der Liste wie im Board */
+.task-title.is-done {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+/* ---------- Nebenzeile ---------- */
+
+/* Grauer Text mit Punkten dazwischen; nur der Ort wird gekürzt, wenn es eng wird */
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: var(--task-meta-size);
+  color: var(--muted);
+}
+
+.task-meta-dot,
+.task-due,
+.task-prio {
+  flex: 0 0 auto;
+}
+
+.task-due.is-overdue {
+  color: var(--prio-jetzt);
+  font-weight: 600;
+}
+
+.task-prio {
+  color: var(--chip-color, var(--muted));
+}
+
+.task-place {
+  overflow: hidden; /* overflow: nötig für text-overflow */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Anlegen durch Tippen: Geister-Zeile und Eingabezeile ---------- */
+
+/* Beide sehen aus wie eine Zeile der Liste, nur der Ring ist leer und
+   trägt die Farbe des Abschnitts. */
+.task-ghost,
+.task-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 6px 2px;
+  border-bottom: 0.5px solid var(--line);
+  font-size: 17px;
+  text-align: left;
+}
+
+.task-ghost-ring,
+.task-inline-ring {
+  --task-ring: var(--col-color);
+}
+
+.task-ghost-label {
+  color: var(--muted);
+}
+
+.task-ghost:active {
+  opacity: 0.55;
+}
+
+/* Das Feld sieht aus wie der Titel einer Zeile: kein Rahmen, keine Fläche */
+.task-inline-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+.task-inline-input::placeholder {
+  color: var(--muted);
+}
+
+/* Solange in einem Abschnitt geschrieben wird, ist die Geister-Zeile darunter überflüssig */
+.task-section.is-adding .task-ghost {
+  display: none;
+}
+
+/* Ebenso der Platzhalter der leeren Liste (Android, src/features/tasks/tasks-list.js).
+   :has: der Platzhalter steht neben den Abschnitten, nicht darin */
+.task-sections:has(.is-adding) + .empty-state {
+  display: none;
+}

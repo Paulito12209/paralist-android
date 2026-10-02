@@ -1,0 +1,201 @@
+/*
+ * Das Filter-Blatt (src/ui/filter-sheet.js): die Übersicht mit einer Zeile
+ * je Abschnitt und „Alle Filter zurücksetzen“, die Unterseite mit dem
+ * Segment „ist | ist nicht“, den Werten (Icon links, Haken rechts) und dem
+ * Hinweis darunter. Blatt, Kopf mit Zurück-Pfeil und „Fertig“ kommen von
+ * den Blättern „Sortieren“ und „Einstellungen“ (styles/calendar.css,
+ * styles/overlays.css), die zentrierte Überschrift der Unterseite aus
+ * styles/settings.css; hier steht nur, was beim Filtern anders ist.
+ * Pfad: styles/filter-sheet.css
+ *
+ * ANPASSBARE WERTE (in styles/tokens.css bzw. styles/tokens-pages.css)
+ * -----------------------------------
+ * --date-wheel-item-h  -> Höhe einer Zeile (wie eine Zeile der Rollen beim Sortieren)
+ * --tab-pill-active-bg -> Fläche des Segments; Band hinter einem gewählten Wert
+ * --bg                 -> Fläche des gewählten Segment-Knopfs
+ * --radius-lg          -> Rundung von Zeilen und Band
+ * --link-color         -> Farbe des Hakens und von „Zurücksetzen“, wenn es etwas zu tun gibt
+ * --chevron            -> Farbe des Chevrons in der Übersicht
+ * --muted / --text     -> Schrift ungefilterter bzw. gefilterter Zeilen und Werte
+ *
+ * Direkt bei ihrer Regel:
+ * .filter-row / .filter-item font-size -> Schrift der Zeilen (16px, wie im Auswahl-Blatt)
+ * .filter-row-value font-size          -> Schrift der Zusammenfassung rechts (15px)
+ * .filter-mode-btn height / font-size  -> Höhe und Schrift der Segment-Knöpfe (34px, 14px)
+ * .filter-reset / .filter-note font-size -> „Zurücksetzen“ (15px) und der Hinweis (13px)
+ * .filter-row-icon / .filter-icon width -> Größe der Icons (20px), .filter-check (20px)
+ */
+
+.filter-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Übersicht: eine Zeile je Abschnitt ---------- */
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--date-wheel-item-h);
+  padding-inline: 12px;
+  border-radius: var(--radius-lg); /* border-radius: rundet die Zeile beim Antippen */
+  color: var(--text);
+  font-size: 16px;
+  text-align: left;
+}
+
+.filter-row:active {
+  opacity: 0.6;
+}
+
+.filter-row-icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  color: var(--muted);
+}
+
+.filter-row-label {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Die Zusammenfassung: grau, solange nicht gefiltert wird; lang endet sie mit „…“ */
+.filter-row-value {
+  max-width: 55%;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 15px;
+  text-overflow: ellipsis; /* text-overflow: „Offen, In Arbeit, …“ statt Umbruch */
+  white-space: nowrap;
+}
+
+.filter-row.is-on .filter-row-value {
+  color: var(--text);
+}
+
+.filter-row-chevron {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: var(--chevron);
+}
+
+/* „Alle Filter zurücksetzen“: grau ohne Filter, blau sobald es etwas zu tun gibt */
+.filter-reset {
+  padding: 4px 0;
+  color: var(--muted);
+  font-size: 15px;
+  text-align: center;
+}
+
+.filter-reset.is-active {
+  color: var(--link-color);
+}
+
+.filter-reset.is-active:active {
+  opacity: 0.6;
+}
+
+/* ---------- Unterseite: Segment „ist | ist nicht“ ---------- */
+
+.filter-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border-radius: 999px; /* border-radius: eine Pille wie das Segment in der Karte „Ansicht“ */
+  background: var(--tab-pill-active-bg);
+}
+
+.filter-mode-btn {
+  height: 34px;
+  border-radius: 999px; /* border-radius: der gefüllte Knopf ist rund wie die Pille */
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.filter-mode-btn.is-on {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.filter-mode-btn:active {
+  opacity: 0.55;
+}
+
+/* ---------- Unterseite: die Werte ---------- */
+
+/* Ein Wert: Icon links, Name, ⓘ, Haken rechts */
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--date-wheel-item-h);
+  padding-inline: 12px;
+  border-radius: var(--radius-lg); /* border-radius: das Band wird eine Pille wie bei den Rollen */
+  color: var(--muted);
+  font-size: 16px;
+  text-align: left;
+}
+
+.filter-item.is-on {
+  background: var(--tab-pill-active-bg);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.filter-item:active {
+  opacity: 0.6;
+}
+
+.filter-label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+
+.filter-name {
+  overflow: hidden;
+  text-overflow: ellipsis; /* text-overflow: ein zu langer Name endet mit „…“ statt umzubrechen */
+  white-space: nowrap;
+}
+
+.filter-icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+}
+
+.filter-item.is-on .filter-icon {
+  color: var(--item-color, currentColor);
+}
+
+/* Der Haken hält seinen Platz auch abgewählt, damit die Namen nicht springen */
+.filter-check {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  color: var(--link-color);
+  visibility: hidden; /* visibility: unsichtbar, aber mit Platz */
+}
+
+.filter-item.is-on .filter-check {
+  visibility: visible;
+}
+
+/* Der Satz unter der Liste: „Zeigt alle Aufgaben außer …“ */
+.filter-note {
+  margin: -4px 12px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
