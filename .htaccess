@@ -1,12 +1,22 @@
-# Hostinger (Apache): die App-Dateien richtig ausliefern.
-# .webmanifest braucht seinen Typ, sonst nimmt Android das Manifest nicht an;
-# version.js darf nie aus dem Zwischenspeicher kommen, damit eine offene App
-# eine neue Fassung bemerkt (src/shell/update-prompt.js).
+# Hostinger (Apache/LiteSpeed): die App-Dateien richtig ausliefern.
+# .webmanifest braucht seinen Typ, sonst nimmt Android das Manifest nicht an.
 AddType application/manifest+json .webmanifest
 AddType image/svg+xml .svg
 AddDefaultCharset UTF-8
 
+# Zwischenspeicher: Hostinger gibt sonst sieben Tage auf CSS und JS — nach
+# einem Upload saehe das Handy noch eine Woche lang die alte Fassung.
+# Code, Stile und Seite werden darum bei jedem Laden kurz beim Server
+# nachgefragt (ETag, Antwort 304 ohne Inhalt, also schnell); version.js
+# kommt nie aus dem Speicher, damit eine offene App eine neue Fassung bemerkt
+# (src/shell/update-prompt.js). Nur Bilder und Video duerfen einen Tag bleiben.
 <IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|css|svg|webmanifest)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(png|jpg|jpeg|mp4)$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
   <Files "version.js">
     Header set Cache-Control "no-store, must-revalidate"
   </Files>
