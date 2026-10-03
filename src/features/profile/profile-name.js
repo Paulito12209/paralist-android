@@ -3,8 +3,8 @@
  * ändern: ein Tipp setzt den Cursor ins Feld, beim Tippen ziehen die
  * Initialen im runden Bild sofort mit (nur solange kein Foto hinterlegt ist),
  * Enter oder ein Tipp daneben schließt das Feld. Gespeichert wird nach einer
- * kurzen Pause im Tippen und beim Verlassen; ein leer gelassenes Feld fällt
- * auf den vorigen Namen zurück. Zeilenumbrüche kommen nicht ins Feld, mehr
+ * kurzen Pause im Tippen und beim Verlassen; ein leer gelassenes Feld zeigt
+ * wieder den Platzhalter „Dein Name“. Zeilenumbrüche kommen nicht ins Feld, mehr
  * als maxNameLength Zeichen auch nicht (src/data/account.js).
  * Pfad: src/features/profile/profile-name.js
  *
