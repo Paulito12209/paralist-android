@@ -64,7 +64,7 @@ export function identityCard() {
         <button class="profile-avatar-edit" type="button" data-avatar-edit="1" aria-label="Profilbild ändern">${icon("pencil")}</button>
       </div>
       <p class="profile-name" contenteditable="plaintext-only" role="textbox" aria-label="Name" data-profile-name="1" data-placeholder="${namePlaceholder}" data-max-length="${maxNameLength}" spellcheck="false" autocapitalize="words" enterkeyhint="done">${escapeHtml(accountName())}</p>
-      ${hasAccount() ? `<p class="profile-mail">${escapeHtml(profile.mail)}</p>` : ""}
+      ${hasAccount() && profile.mail ? `<p class="profile-mail">${escapeHtml(profile.mail)}</p>` : ""}
       <p class="profile-meta">${escapeHtml(metaLine())}</p>
     </section>
   `;
